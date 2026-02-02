@@ -1,6 +1,9 @@
 import random
 import streamlit as st
 
+import os
+import careon_bank_v2 as bank
+
 # ---------- Page config ----------
 st.set_page_config(page_title="Starlight Deck", layout="centered")
 
