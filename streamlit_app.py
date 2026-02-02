@@ -1,4 +1,4 @@
-oh import os
+import os
 import random
 from datetime import datetime
 
