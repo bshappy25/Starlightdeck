@@ -27,29 +27,7 @@ BANK_PATH = os.path.join(HERE, "careon_bank_v2.json")
 b = bank.load_bank(BANK_PATH)
 bank.save_bank(b, BANK_PATH)
 
-# -------------------------
-# BUILD TICKER PHRASES
-# -------------------------
-b_for_ticker = bank.load_bank(BANK_PATH)
-phrases = []
 
-for tx in reversed(b_for_ticker.get("history", []) or []):
-    if isinstance(tx, dict) and tx.get("type") == "phrase":
-        meta = tx.get("meta") or {}
-        msg = (meta.get("msg") or "").strip()
-        usr = (meta.get("user") or "").strip()
-        if msg:
-            label = f"{usr.upper()}: {msg}" if usr else msg
-            phrases.append(label)
-    if len(phrases) >= 10:
-        break
-
-# -------------------------
-# HEADER + CAREON MARKET ENTRY
-# -------------------------
-ui_header.render_header(ticker_items=phrases)
-careon_bubble.render_bubble()
-careon_market.render_market(bank, BANK_PATH)
 # -------------------------
 # OPTIONAL GEMINI
 # -------------------------
