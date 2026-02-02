@@ -194,7 +194,30 @@ careon_market.render_market(bank, BANK_PATH)
 
 st.divider()
 
+# -------------------------
+# USERNAME (top-of-page identity)
+# -------------------------
+st.markdown("### Sign in")
 
+name = st.text_input(
+    "Username",
+    value=st.session_state.get("username", ""),
+    placeholder="Type a name (e.g., KingQuantum)",
+    max_chars=16,
+    key="username_input"
+).strip()
+
+st.session_state["username"] = name
+
+# Auto-admin if username matches (no password needed per your request)
+if name.lower() in {"bshappy", "bshapp"}:
+    st.session_state["admin_ok"] = True
+    st.caption("Status: ✅ Admin")
+else:
+    st.session_state["admin_ok"] = False
+    st.caption("Status: Guest")
+
+st.divider()
 # -------------------------
 # COMMUNITY GOAL + BALANCE (clean, single instance)
 # -------------------------
