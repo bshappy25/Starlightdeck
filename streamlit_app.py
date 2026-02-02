@@ -231,21 +231,42 @@ with st.sidebar:
     st.markdown("<div class='muted'>Community-powered • Early test build</div>", unsafe_allow_html=True)
 
 # ---------- UI ----------
-# ---------- Style (Refreshed UI) ----------
+## ---------- Style (Refreshed UI) ----------
 st.markdown(
     r"""
     <style>
-    
- 
+    :root {
+        --bg1: #120A2A;   /* deep purple */
+        --bg2: #1A0F3D;
+        --panel: rgba(255,255,255,0.06);
+        --panelBorder: rgba(255,255,255,0.10);
+        --gold: #f6c177;
+        --gold2: #ffd27a;
+        --text: #f5f5f7;
+        --muted: rgba(245,245,247,0.82);
+        --btn: #3f44c8;
+        --btnHover: #5a5ff0;
+    }
+
+    .stApp {
+        background: radial-gradient(1200px 600px at 50% -10%, rgba(255, 210, 122, 0.12), transparent 60%),
+                    linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 100%);
+        color: var(--text);
+    }
+
+    /* text helpers */
+    .muted { color: var(--muted); font-size: 0.95rem; }
+
+    /* Cards */
     .cardbox {
         background: var(--panel);
         border: 1px solid var(--panelBorder);
         border-radius: 16px;
         padding: 14px 16px;
         margin-top: 12px;
-        box-shadow: 0 0 0 rgba(0,0,0,0);
     }
 
+    /* Buttons */
     .stButton > button {
         background-color: var(--btn);
         color: white;
@@ -259,7 +280,7 @@ st.markdown(
     .stButton > button:hover { background-color: var(--btnHover); transform: scale(1.01); }
 
     /* Careon pill */
-    .careon-pill-wrap { text-align:center; margin-top: 1.1em; margin-bottom: 0.6em; }
+    .careon-pill-wrap { text-align:center; margin-top: 0.9em; margin-bottom: 0.6em; }
 
     .careon-pill {
         display: inline-block;
@@ -267,7 +288,7 @@ st.markdown(
         border-radius: 999px;
         background: rgba(246, 193, 119, 0.14);
         color: var(--gold2);
-        font-weight: 800;
+        font-weight: 900;
         letter-spacing: 0.08em;
         border: 1px solid rgba(246, 193, 119, 0.38);
         text-shadow: 0 0 12px rgba(246,193,119,0.35);
@@ -276,6 +297,12 @@ st.markdown(
             0 0 28px rgba(246,193,119,0.25);
         animation: careonPulse 2.6s ease-in-out infinite;
         user-select: none;
+    }
+    .careon-pill:hover {
+        transform: translateY(-1px) scale(1.04);
+        box-shadow:
+            0 0 22px rgba(246,193,119,0.85),
+            0 0 52px rgba(246,193,119,0.45);
     }
 
     @keyframes careonPulse {
@@ -299,47 +326,53 @@ st.markdown(
         }
     }
 
+    /* ---------- Moving Banner (Acuity / Valor / Variety) ---------- */
+    .ticker-wrap {
+        margin: 0.7em auto 0.2em auto;
+        padding: 10px 0;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.10);
+        overflow: hidden;
+        position: relative;
+        max-width: 860px;
+        backdrop-filter: blur(6px);
+    }
+
+    .ticker-track {
+        display: inline-block;
+        white-space: nowrap;
+        will-change: transform;
+        animation: tickerScroll 22s linear infinite; /* slower = more zen */
+        padding-left: 100%;
+    }
+
+    @keyframes tickerScroll {
+        0%   { transform: translateX(0); }
+        100% { transform: translateX(-100%); }
+    }
+
+    .ticker-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        font-weight: 900;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        font-size: 0.95rem;
+    }
+
+    .dot { opacity: 0.55; margin: 0 16px; }
+
+    .acuity { color: #59a6ff; text-shadow: 0 0 14px rgba(89,166,255,0.22); }
+    .valor  { color: #ff5b5b; text-shadow: 0 0 14px rgba(255,91,91,0.18); }
+    .variety{ color: #ffe27a; text-shadow: 0 0 14px rgba(255,226,122,0.18); }
+
     .footer { text-align: center; opacity: 0.75; font-size: 0.85rem; margin-top: 2em; }
     </style>
     """,
     unsafe_allow_html=True
 )
-
-# ---------- UI Header ----------
-
-# ---------- UI Header ----------
-
-# Pop title (stronger than st.title)
-st.markdown(
-    """
-    
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-st.markdown(
-    "<div class='muted' style='text-align:center; margin-bottom: 0.6em;'>"
-    "A calm, reflective card experience<br/>guided by intuition and gentle structure."
-    "</div>",
-    unsafe_allow_html=True
-)
-
-# Clickable Careon pill (placeholder purchase link)
-st.markdown(
-    """
-    <div class='careon-pill-wrap'>
-        <a href="#"
-           class="careon-pill"
-           style="text-decoration:none;"
-           title="Purchase Careons (coming soon)">
-            Careon Ȼ
-        </a>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
 # Status box
 
 # ---------- Soft Goal ----------
