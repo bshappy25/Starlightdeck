@@ -568,29 +568,36 @@ if st.session_state.get("classic_active"):
                 unsafe_allow_html=True
             )
             
-            # Estrella at card 10
-            if st.session_state["classic_draws"] == 10:
-                st.markdown("### ✨ Estrella ✨")
-                st.markdown("*10-card reflection...*")
+          # Estrella at card 10
+if st.session_state["classic_draws"] == 10:
+    if "estrella_10_response" not in st.session_state:
+        st.markdown("### ✨ Estrella ✨")
+        st.markdown("*10-card reflection...*")
+        
+        if GEMINI_API_KEY:
+            try:
+                model = genai.GenerativeModel('gemini-pro')
+                prompt = f"Two short paragraphs reflecting on 10 card draws.\nVibes: {st.session_state['classic_vibe_counts']}\nZenith: {st.session_state['classic_zenith_count']}"
+                response = model.generate_content(prompt)
+                st.session_state["estrella_10_response"] = response.text
                 
-                if GEMINI_API_KEY:
-                    try:
-                        model = genai.GenerativeModel('gemini-pro')
-                        prompt = f"Two short paragraphs reflecting on 10 card draws.\nVibes: {st.session_state['classic_vibe_counts']}\nZenith: {st.session_state['classic_zenith_count']}"
-                        response = model.generate_content(prompt)
-                        st.markdown(f"<div class='cardbox'>{response.text}</div>", unsafe_allow_html=True)
-                        
-                        # Award Careon
-                        b = bank.load_bank(BANK_PATH)
-                        bank.award_once_per_round(b, note="classic-10-estrella", amount=1)
-                        push_history_line(b, "Estrella spoke (10): +1 Ȼ")
-                        bank.save_bank(b, BANK_PATH)
-                    except:
-                        st.warning("Estrella is resting (API unavailable)")
-                else:
-                    st.info("Add GEMINI_API_KEY to hear Estrella's wisdom")
-            
-            st.rerun()
+                # Award Careon
+                b = bank.load_bank(BANK_PATH)
+                bank.award_once_per_round(b, note="classic-10-estrella", amount=1)
+                push_history_line(b, "Estrella spoke (10): +1 Ȼ")
+                bank.save_bank(b, BANK_PATH)
+            except Exception as e:
+                st.session_state["estrella_10_response"] = f"Estrella is resting ({str(e)})"
+        else:
+            st.session_state["estrella_10_response"] = "Add GEMINI_API_KEY to hear Estrella's wisdom"
+    
+    # Always display if it exists
+    if "estrella_10_response" in st.session_state:
+        st.markdown("### ✨ Estrella ✨")
+        st.markdown(f"<div class='cardbox'>{st.session_state['estrella_10_response']}</div>", unsafe_allow_html=True)
+
+st.rerun()
+
     
     # Card 20 finale
     if draws == 20:
