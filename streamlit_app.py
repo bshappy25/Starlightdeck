@@ -188,66 +188,20 @@ for tx in reversed(b_for_ticker.get("history", []) or []):
 # -------------------------
 # TOP UI (render ONCE)
 # -------------------------
+import audio_ambience
+import vip_status
 
-# ========== HEADER ==========
 ui_header.render_header(ticker_items=phrases)
-
-# ========== CAREON BUBBLE ==========
 careon_bubble.render_bubble()
-
-# ========== MARKET (if open) ==========
 careon_market.render_market(bank, BANK_PATH)
 
-# -------------------------
-# USERNAME (top-of-page identity)
-# -------------------------
-st.markdown("### Sign in")
-
-name = st.text_input(
-    "Username",
-    value=st.session_state.get("username", ""),
-    placeholder="Type a name (e.g., Bshappy)",
-    max_chars=16,
-    key="username_input"
-).strip()
-
-st.markdown("### Sign in")
-
-name = st.text_input(
-    "Username",
-    value=st.session_state.get("username", ""),
-    placeholder="Type a name (e.g., Bshappy)",
-    max_chars=16,
-    key="top_username_input"
-).strip()
-
-st.session_state["username"] = name
-
-if name and name.lower() in {"bshappy", "bshapp"}:
-    st.session_state["admin_ok"] = True
-    st.caption("Status: ✅ Admin")
-else:
-    st.session_state["admin_ok"] = False
-    st.caption("Status: Guest")
+# Audio controls (floating bottom-right)
+audio_ambience.render_audio_controls()
 
 st.divider()
 
-# auto-admin by username
-if name and name.lower() in {"bshappy", "bshapp"}:
-    st.session_state["admin_ok"] = True
-    st.caption("Status: ✅ Admin")
-else:
-    st.session_state["admin_ok"] = False
-    st.caption("Status: Guest")
-
-st.divider()
-
-
-# -------------------------
-# USERNAME (top-of-page identity)
-# -------------------------
-st.markdown("### Sign in")
-
+# VIP Status Badge (after username section, around line 220)
+# Replace the username section with:
 name = st.text_input(
     "Username",
     value=st.session_state.get("username", ""),
@@ -258,15 +212,17 @@ name = st.text_input(
 
 st.session_state["username"] = name
 
-# Auto-admin if username matches (no password needed per your request)
+# Show VIP badge
+b_for_vip = bank.load_bank(BANK_PATH)
+vip_status.render_vip_badge(b_for_vip.get("balance", 0), name)
+
+# Auto-admin if username matches
 if name.lower() in {"bshappy", "bshapp"}:
     st.session_state["admin_ok"] = True
     st.caption("Status: ✅ Admin")
 else:
     st.session_state["admin_ok"] = False
-    st.caption("Status: Guest")
 
-st.divider()
 # -------------------------
 # COMMUNITY GOAL + BALANCE (clean, single instance)
 # -------------------------
