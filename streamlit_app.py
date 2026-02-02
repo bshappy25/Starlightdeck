@@ -281,9 +281,9 @@ st.markdown(
 .valor  { color: #ff5b5b; text-shadow: 0 0 14px rgba(255,91,91,0.18); }
 .variety{ color: #ffe27a; text-shadow: 0 0 14px rgba(255,226,122,0.18); }
 
+
+  
 st.markdown(
-    """
-  st.markdown(
     """
     <div class="ticker-wrap">
       <div class="ticker-track">
@@ -300,9 +300,6 @@ st.markdown(
         </span>
       </div>
     </div>
-    """,
-    unsafe_allow_html=True
-)
     """,
     unsafe_allow_html=True
 )
