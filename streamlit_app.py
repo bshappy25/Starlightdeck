@@ -4,6 +4,11 @@ import streamlit as st
 import os
 import careon_bank_v2 as bank
 
+HERE = os.path.dirname(os.path.abspath(__file__))
+BANK_PATH = os.path.join(HERE, "careon_bank_v2.json")
+
+
+
 # ---------- Page config ----------
 st.set_page_config(page_title="Starlight Deck", layout="centered")
 
