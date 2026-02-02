@@ -70,13 +70,20 @@ def earn(amount: int):
     st.session_state["balance"] += amount
 
 ensure_state()
+# ---------- Load persistent bank ----------
 b = bank.load_bank(BANK_PATH)
-
 
 # ---------- UI ----------
 st.title("✦ Starlight Deck ✦")
 
 st.markdown(
+    f"""
+    <div class="cardbox">
+      <b>Balance:</b> {b.get("balance", 0)} Ȼ &nbsp;&nbsp; • &nbsp;&nbsp;
+      <b>🌐 SLD Network Fund:</b> {b.get("sld_network_fund", 0)} Ȼ
+    </div>
+    """,
+    unsafe_allow_html=True,
     """
     A calm, reflective card experience  
     guided by intuition and gentle structure.
