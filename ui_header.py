@@ -88,7 +88,9 @@ def render_header(ticker_items=None):
                 cleaned.append(html.escape(s[:20]))
 
     if not cleaned:
-        stream = f"{avv}<span class='dot'>&bull;</span>{avv}"
+    # Stand-in message if no phrases exist yet
+    msg = "ENTER YOUR PHRASE"
+    stream = f"{html.escape(msg)} <span class='dot'>&bull;</span> {avv} <span class='dot'>&bull;</span> {html.escape(msg)}"
     else:
         parts = []
         for msg in cleaned:
