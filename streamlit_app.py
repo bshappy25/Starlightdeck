@@ -250,12 +250,6 @@ progress_pct = 0
 if GOAL > 0:
     progress_pct = min(100, int((current_fund / GOAL) * 100))
 
-/* Make Streamlit audio player subtle */
-div[data-testid="stAudio"] audio {
-    height: 26px;
-    opacity: 0.75;
-    border-radius: 12px;
-}
 
 st.markdown(
     f"""
@@ -327,7 +321,12 @@ st.markdown(
 
 st.divider()
 
-
+/* Make Streamlit audio player subtle */
+div[data-testid="stAudio"] audio {
+    height: 26px;
+    opacity: 0.75;
+    border-radius: 12px;
+}
 
 # -------------------------
 # SIDEBAR (admin + TGIF)
