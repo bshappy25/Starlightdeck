@@ -598,7 +598,10 @@ if st.session_state.get("classic_active"):
                     if GEMINI_API_KEY:
                         try:
                             model = genai.GenerativeModel('gemini-3-flash-preview')
-                            prompt = f"Two short paragraphs reflecting on 10 card draws.\nVibes: {st.session_state['classic_vibe_counts']}\nZenith: {st.session_state['classic_zenith_count']}"
+                            vc = st.session_state['classic_vibe_counts']
+lc = st.session_state['classic_level_counts']
+prompt = f"Two short paragraphs analyzing the journey.\nVibes: Acuity {vc['acuity']}, Valor {vc['valor']}, Variety {vc['variety']}\nLevels: {dict(lc)}\nZenith: {st.session_state['classic_zenith_count']}"
+"
                             response = model.generate_content(prompt)
                             st.session_state["estrella_10_response"] = response.text
                             
