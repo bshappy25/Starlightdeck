@@ -679,86 +679,83 @@ if st.session_state.get("classic_active"):
 st.divider()
 
 
-# -------------------------
-# RAPID MODE
-# -------------------------
-st.subheader("⚡ Rapid Mode")
-st.write("Cost: **5 Ȼ** • Roll: **20 pulses @ 5%** • Win condition: **≥ 1 Zenith**")
-st.write("Success payout: **+20 Ȼ** + **+3 Ȼ completion** • Failure payout: **+1 Ȼ completion**")
+if mode == "rapid":
+    st.subheader("⚡ Rapid Mode")
 
-c1, c2 = st.columns(2)
-run = c1.button("Run Rapid (-5 Ȼ)", key="rapid_run_btn")
-clear = c2.button("Clear Result", key="rapid_clear_btn")
+    # ---- Rapid rules ----
+    TRIALS = 20
+    CHANCE = 0.05
+    COST = 5
+    WIN_ZENITHS = 2
 
-if clear:
-    st.session_state["rapid_last_result"] = None
-    st.session_state["rapid_last_roll"] = None
-    st.rerun()
+    st.write(
+        f"Cost: **{COST} Ȼ** • Roll: **{TRIALS} pulses @ {int(CHANCE*100)}%** • "
+        f"Win condition: **≥ {WIN_ZENITHS} Zeniths**"
+    )
+    st.write("Success payout: **+20 Ȼ** + **+3 Ȼ completion** • Failure payout: **+1 Ȼ completion**")
 
-if run:
-    b = bank.load_bank(BANK_PATH)
-    if b.get("balance", 0) < 5:
-        st.error("Not enough Careons to run Rapid Mode.")
-    else:
-        if not bank.spend(b, 5, note="rapid charge"):
+    # ---- Session state for results ----
+    st.session_state.setdefault("rapid_last_result", None)  # (status, line, zenith_count)
+
+    # ---- Buttons ----
+    cA, cB = st.columns(2)
+    run_rapid = cA.button(f"Run Rapid (-{COST} Ȼ)")
+    reset_wallet = cB.button("Reset Wallet")
+
+    if reset_wallet:
+        # Uses your existing helper; if you removed it, delete these 2 lines and handle reset your way
+        reset_bank_file()
+        st.session_state["rapid_last_result"] = None
+        st.rerun()
+
+    if run_rapid:
+        b = bank.load_bank(BANK_PATH)
+
+        if b.get("balance", 0) < COST:
             st.error("Not enough Careons to run Rapid Mode.")
         else:
-            success = rapid_zenith_roll(trials=20, chance=0.05)
-            st.session_state["rapid_last_roll"] = success
+            # Charge cost (ALL spend funds the network inside bank.spend)
+            if not bank.spend(b, COST, note="rapid charge"):
+                st.error("Not enough Careons to run Rapid Mode.")
+            else:
+                # Roll Zeniths across TRIALS
+                zenith_count = sum(1 for _ in range(TRIALS) if random.random() < CHANCE)
 
-            zenith, forced_flag = zenith_check(forced)
-if run:
-    b = bank.load_bank(BANK_PATH)
+                if zenith_count >= WIN_ZENITHS:
+                    estrella_line = "★ Estrella ★ Bold move, you will be rewarded kindly."
+                    bank.award_once_per_round(b, note="rapid-success-20", amount=20)
+                    bank.award_once_per_round(b, note="rapid-completion-bonus", amount=3)
+                    st.session_state["rapid_last_result"] = ("SUCCESS", estrella_line, zenith_count)
+                else:
+                    estrella_line = "★ Estrella ★ Recklessness can be costly."
+                    bank.award_once_per_round(b, note="rapid-fail-completion", amount=1)
+                    st.session_state["rapid_last_result"] = ("FAILURE", estrella_line, zenith_count)
 
-    if b.get("balance", 0) < 5:
-        st.error("Not enough Careons to run Rapid Mode.")
-    else:
-        if not bank.spend(b, 5, note="rapid charge"):
-            st.error("Not enough Careons to run Rapid Mode.")
+                bank.save_bank(b, BANK_PATH)
+                st.rerun()
+
+    # ---- Display result ----
+    result = st.session_state.get("rapid_last_result")
+    if result:
+        status, estrella_line, zenith_count = result
+
+        if status == "SUCCESS":
+            st.success(f"SUCCESS — {zenith_count} Zeniths")
         else:
-            zenith_count = rapid_zenith_roll(trials=20, chance=0.05)
+            st.warning(f"FAILURE — {zenith_count} Zeniths")
 
-            # shimmer SFX if at least one Zenith
-            if zenith_count > 0:
-                st.session_state["sfx_play_id"] = f"rapid-{st.session_state.get('sfx_counter', 0)}"
-                st.session_state["sfx_counter"] = st.session_state.get("sfx_counter", 0) + 1
+        st.markdown(
+            f"""
+            <div class="cardbox" style="text-align:center;">
+                <div style="font-size:1.05rem; font-weight:800;">{estrella_line}</div>
+                <div class="muted" style="margin-top:0.35em;">
+                    Zeniths rolled: <b>{zenith_count}</b> / {TRIALS}
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
-            if zenith_count >= 2:
-                estrella_line = "★ Estrella ★ Bold move, you will be rewarded kindly."
-                bank.award_once_per_round(b, note="rapid-success-20", amount=20)
-                bank.award_once_per_round(b, note="rapid-completion-bonus", amount=3)
-                st.session_state["last_result"] = (
-                    "SUCCESS",
-                    estrella_line,
-                    zenith_count,
-                )
-            else:
-                estrella_line = "★ Estrella ★ Recklessness can be costly."
-                bank.award_once_per_round(b, note="rapid-fail-completion", amount=1)
-                st.session_state["last_result"] = (
-                    "FAILURE",
-                    estrella_line,
-                    zenith_count,
-                )
-
-            bank.save_bank(b, BANK_PATH)
-            st.rerun()
-
-            if success:
-                line = "★ Estrella ★ Bold move, you will be rewarded kindly."
-                bank.award_once_per_round(b, note="rapid-success-20", amount=20)
-                bank.award_once_per_round(b, note="rapid-completion-bonus", amount=3)
-                st.session_state["rapid_last_result"] = ("SUCCESS", line)
-            else:
-                line = "★ Estrella ★ Recklessness can be costly."
-                bank.award_once_per_round(b, note="rapid-fail-completion", amount=1)
-                st.session_state["rapid_last_result"] = ("FAILURE", line)
-
-            bank.save_bank(b, BANK_PATH)
-            st.rerun()
-
-
-st.divider()
 
 
 # -------------------------
