@@ -340,12 +340,14 @@ current_fund = int(b.get("sld_network_fund", 0))
 GOAL = 1000  # Community fund goal in Careons
 
 # -------------------------
-# COMMUNITY GOAL
+# COMMUNITY GOAL + BALANCE
 # -------------------------
-GOAL = 1000  # keep this near the top ideally
+GOAL = 1000  # community unlock target
 
 b_goal = bank.load_bank(BANK_PATH)
 current_fund = int(b_goal.get("sld_network_fund", 0))
+balance_now = int(b_goal.get("balance", 0))
+
 progress_pct = 0
 if GOAL > 0:
     progress_pct = min(100, int((current_fund / GOAL) * 100))
@@ -380,15 +382,14 @@ st.markdown(
 st.markdown(
     f"""
     <div class="cardbox" style="text-align:center;">
-        <b>Balance:</b> {b.get("balance", 0)} Ȼ &nbsp;&nbsp; • &nbsp;&nbsp;
-        <b>🌐 SLD Network Fund:</b> {b.get("sld_network_fund", 0)} Ȼ
+        <b>Balance:</b> {balance_now} Ȼ &nbsp;&nbsp; • &nbsp;&nbsp;
+        <b>🌐 SLD Network Fund:</b> {current_fund} Ȼ
     </div>
     """,
     unsafe_allow_html=True
 )
 
 st.divider()
-
 # -----------------------------
 # Admin gate (username -> password)
 # -----------------------------
