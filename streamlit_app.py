@@ -1,25 +1,15 @@
+import os
 import random
 import streamlit as st
 
-import os
 import careon_bank_v2 as bank
 
+# ---------- Paths ----------
 HERE = os.path.dirname(os.path.abspath(__file__))
 BANK_PATH = os.path.join(HERE, "careon_bank_v2.json")
 
-
-
 # ---------- Page config ----------
-st.markdown(
-    f"""
-    <div class="cardbox">
-      <b>Balance:</b> {b.get("balance", 0)} Ȼ &nbsp;&nbsp; • &nbsp;&nbsp;
-      <b>🌐 SLD Network Fund:</b> {b.get("sld_network_fund", 0)} Ȼ
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
+st.set_page_config(page_title="Starlight Deck", layout="centered")
 
 # ---------- Style ----------
 st.markdown(
@@ -52,25 +42,21 @@ st.markdown(
     .footer { text-align: center; opacity: 0.75; font-size: 0.85rem; margin-top: 2em; }
     </style>
     """,
-    unsafe_allow_html=True,
+    unsafe_allow_html=True
 )
 
 # ---------- Helpers ----------
 def rapid_zenith_roll(trials: int = 20, chance: float = 0.05) -> bool:
-    """True if at least one Zenith hit occurs across N trials."""
     return any(random.random() < chance for _ in range(trials))
 
+def reset_bank_file():
+    b0 = {"balance": 25, "sld_network_fund": 0, "history": []}
+    bank.save_bank(b0, BANK_PATH)
+
+# ---------- Session state ----------
 st.session_state.setdefault("mode", None)
 st.session_state.setdefault("last_result", None)
 
-def spend(cost: int):
-    st.session_state["balance"] -= cost
-    st.session_state["network_fund"] += cost
-
-def earn(amount: int):
-    st.session_state["balance"] += amount
-
-ensure_state()
 # ---------- Load persistent bank ----------
 b = bank.load_bank(BANK_PATH)
 
@@ -78,13 +64,6 @@ b = bank.load_bank(BANK_PATH)
 st.title("✦ Starlight Deck ✦")
 
 st.markdown(
-    f"""
-    <div class="cardbox">
-      <b>Balance:</b> {b.get("balance", 0)} Ȼ &nbsp;&nbsp; • &nbsp;&nbsp;
-      <b>🌐 SLD Network Fund:</b> {b.get("sld_network_fund", 0)} Ȼ
-    </div>
-    """,
-    unsafe_allow_html=True,
     """
     A calm, reflective card experience  
     guided by intuition and gentle structure.
@@ -92,24 +71,18 @@ st.markdown(
 )
 
 st.markdown(
-    f"""
-    <div style="text-align:center; margin-top:1em;">
-        <span class="careon">Careon Ȼ</span>
-    </div>
-    """,
-    unsafe_allow_html=True,
+    '<div style="text-align:center; margin-top:1em;"><span class="careon">Careon Ȼ</span></div>',
+    unsafe_allow_html=True
 )
 
-# Status line (local demo values for now)
-st.markdown(
-    f"""
-    <div class="cardbox">
-      <b>Balance:</b> {st.session_state["balance"]} Ȼ &nbsp;&nbsp; • &nbsp;&nbsp;
-      <b>🌐 SLD Network Fund:</b> {st.session_state["network_fund"]} Ȼ
-    </div>
-    """,
-    unsafe_allow_html=True,
+# Status box (HTML kept single-line to avoid f-string argument issues)
+status_html = (
+    f'<div class="cardbox">'
+    f'<b>Balance:</b> {b.get("balance", 0)} Ȼ &nbsp;&nbsp; • &nbsp;&nbsp; '
+    f'<b>🌐 SLD Network Fund:</b> {b.get("sld_network_fund", 0)} Ȼ'
+    f'</div>'
 )
+st.markdown(status_html, unsafe_allow_html=True)
 
 st.divider()
 
@@ -125,38 +98,31 @@ with col2:
 
 mode = st.session_state.get("mode")
 
-# ---------- Normal (stub for now) ----------
 if mode == "normal":
     st.info("Normal Mode web port is next. Rapid Mode is live now for testing.")
 
-# ---------- Rapid Mode (LIVE) ----------
 if mode == "rapid":
     st.subheader("⚡ Rapid Mode")
     st.write("Cost: **5 Ȼ** • Roll: **20 pulses @ 5%** • Win condition: **≥ 1 Zenith**")
     st.write("Success payout: **+20 Ȼ** + **+3 Ȼ completion** • Failure payout: **+1 Ȼ completion**")
 
-    cols = st.columns(2)
-    with cols[0]:
-        run = st.button("Run Rapid (-5 Ȼ)")
-    with cols[1]:
-        reset = st.button("Reset Demo Wallet")
+    cA, cB = st.columns(2)
+    run = cA.button("Run Rapid (-5 Ȼ)")
+    reset = cB.button("Reset Wallet")
 
     if reset:
-        st.session_state["balance"] = 25
-        st.session_state["network_fund"] = 0
+        reset_bank_file()
         st.session_state["last_result"] = None
         st.rerun()
 
     if run:
-        # Reload latest bank each click (safe)
         b = bank.load_bank(BANK_PATH)
 
         if b.get("balance", 0) < 5:
             st.error("Not enough Careons to run Rapid Mode.")
         else:
-            # Pay entry (ALL spend funds the network)
-            ok = bank.spend(b, 5, note="rapid charge")
-            if not ok:
+            # ALL spend funds the network
+            if not bank.spend(b, 5, note="rapid charge"):
                 st.error("Not enough Careons to run Rapid Mode.")
             else:
                 success = rapid_zenith_roll(trials=20, chance=0.05)
@@ -174,7 +140,6 @@ if mode == "rapid":
                 bank.save_bank(b, BANK_PATH)
                 st.rerun()
 
-    # Show last result nicely
     if st.session_state["last_result"]:
         status, estrella_line = st.session_state["last_result"]
         if status == "SUCCESS":
@@ -182,13 +147,7 @@ if mode == "rapid":
         else:
             st.warning(status)
 
-        st.markdown(
-            f"""
-            <div class="cardbox">
-              <div style="font-size:1.15rem;"><b>{estrella_line}</b></div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        result_html = f'<div class="cardbox"><div style="font-size:1.15rem;"><b>{estrella_line}</b></div></div>'
+        st.markdown(result_html, unsafe_allow_html=True)
 
 st.markdown('<div class="footer">Community-powered • Early test build</div>', unsafe_allow_html=True)
