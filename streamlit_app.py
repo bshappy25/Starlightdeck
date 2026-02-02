@@ -202,11 +202,7 @@ st.markdown(
 )
 
 st.markdown(
-    '<div style="text-align:center; margin-top:1em;"><span class="careon">Careon Ȼ</span></div>',
-    unsafe_allow_html=True
-)
-
-.careon {
+    '<div style="text-align:center; margin-top:1em;"><span class=".careon {
     display: inline-block;
     padding: 0.35em 0.85em;
     border-radius: 999px;
@@ -219,14 +215,35 @@ st.markdown(
 
     border: 1px solid rgba(246, 193, 119, 0.35);
 
-    /* ✨ Yellow glow */
     box-shadow:
         0 0 10px rgba(246, 193, 119, 0.55),
         0 0 22px rgba(246, 193, 119, 0.30);
 
-    /* optional: text glow for extra pop */
     text-shadow: 0 0 10px rgba(246, 193, 119, 0.35);
+
+    animation: careonPulse 2.6s ease-in-out infinite;
 }
+
+@keyframes careonPulse {
+    0% {
+        box-shadow:
+            0 0 10px rgba(246,193,119,0.45),
+            0 0 22px rgba(246,193,119,0.25);
+    }
+    50% {
+        box-shadow:
+            0 0 14px rgba(246,193,119,0.70),
+            0 0 30px rgba(246,193,119,0.35);
+    }
+    100% {
+        box-shadow:
+            0 0 10px rgba(246,193,119,0.45),
+            0 0 22px rgba(246,193,119,0.25);
+    }
+}">Careon Ȼ</span></div>',
+    unsafe_allow_html=True
+)
+
 # Status box
 b = bank.load_bank(BANK_PATH)
 status_html = (
