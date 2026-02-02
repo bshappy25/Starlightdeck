@@ -689,17 +689,17 @@ st.session_state.setdefault("rapid_last_result", None)  # (status, estrella_line
 # ---- Mode chooser (keep simple + stable) ----
 st.markdown("<div class='cardbox' style='text-align:center;'><b>Choose a mode</b></div>", unsafe_allow_html=True)
 
-c1, c2 = st.columns(2)
-with c1:
-    if st.button("Start Normal"):
+#c1, c2 = st.columns(2)
+#with c1:
+   # if st.button("Start Normal"):
         st.session_state["mode"] = "normal"
         st.session_state["mode_msg"] = "Normal mode selected."
         # wipe rapid-only state when switching
         st.session_state["rapid_last_result"] = None
         st.rerun()
 
-with c2:
-    if st.button("Start Rapid"):
+#with c2:
+    #if st.button("Start Rapid"):
         st.session_state["mode"] = "rapid"
         st.session_state["mode_msg"] = "Rapid mode selected."
         # wipe rapid-only state (fresh start each switch)
@@ -709,7 +709,7 @@ with c2:
 mode = st.session_state.get("mode")
 
 # ---- Bridge: consistent banner + safe reset (does NOT touch wallet) ----
-if mode:
+#if mode:
     st.markdown(
         f"""
         <div class="cardbox" style="text-align:center;">
@@ -769,7 +769,7 @@ if mode == "normal":
 # ============================================================
 # RAPID MODE (fresh, stable, 2-zenith win condition)
 # ============================================================
-#if mode == "rapid":
+if mode == "rapid":
   #  st.subheader("⚡ Rapid Mode")
 
     # ---- Rapid rules (edit here if needed) ----
