@@ -192,67 +192,125 @@ with st.sidebar:
     st.markdown("<div class='muted'>Community-powered • Early test build</div>", unsafe_allow_html=True)
 
 # ---------- UI ----------
+# ---------- Style (Refreshed UI) ----------
+st.markdown(
+    r"""
+    <style>
+    :root {
+        --bg1: #120A2A;   /* deep purple */
+        --bg2: #1A0F3D;
+        --panel: rgba(255,255,255,0.06);
+        --panelBorder: rgba(255,255,255,0.10);
+        --gold: #f6c177;
+        --gold2: #ffd27a;
+        --text: #f5f5f7;
+        --muted: rgba(245,245,247,0.82);
+        --btn: #3f44c8;
+        --btnHover: #5a5ff0;
+    }
+
+    .stApp {
+        background: radial-gradient(1200px 600px at 50% -10%, rgba(255, 210, 122, 0.12), transparent 60%),
+                    linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 100%);
+        color: var(--text);
+    }
+
+    h1 { color: var(--gold); text-align: center; letter-spacing: 0.06em; }
+    p, li, span, div { color: var(--text); font-size: 1.05rem; }
+    .muted { color: var(--muted); font-size: 0.95rem; }
+
+    .cardbox {
+        background: var(--panel);
+        border: 1px solid var(--panelBorder);
+        border-radius: 16px;
+        padding: 14px 16px;
+        margin-top: 12px;
+        box-shadow: 0 0 0 rgba(0,0,0,0);
+    }
+
+    .stButton > button {
+        background-color: var(--btn);
+        color: white;
+        border-radius: 14px;
+        padding: 0.65em 1.2em;
+        border: none;
+        font-size: 1.05rem;
+        transition: all 0.2s ease;
+        width: 100%;
+    }
+    .stButton > button:hover { background-color: var(--btnHover); transform: scale(1.01); }
+
+    /* Careon pill */
+    .careon-pill-wrap { text-align:center; margin-top: 1.1em; margin-bottom: 0.6em; }
+
+    .careon-pill {
+        display: inline-block;
+        padding: 0.42em 0.95em;
+        border-radius: 999px;
+        background: rgba(246, 193, 119, 0.14);
+        color: var(--gold2);
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        border: 1px solid rgba(246, 193, 119, 0.38);
+        text-shadow: 0 0 12px rgba(246,193,119,0.35);
+        box-shadow:
+            0 0 12px rgba(246,193,119,0.55),
+            0 0 28px rgba(246,193,119,0.25);
+        animation: careonPulse 2.6s ease-in-out infinite;
+        user-select: none;
+    }
+
+    @keyframes careonPulse {
+        0% {
+            transform: translateY(0px);
+            box-shadow:
+                0 0 12px rgba(246,193,119,0.45),
+                0 0 28px rgba(246,193,119,0.20);
+        }
+        50% {
+            transform: translateY(-1px);
+            box-shadow:
+                0 0 18px rgba(246,193,119,0.78),
+                0 0 44px rgba(246,193,119,0.33);
+        }
+        100% {
+            transform: translateY(0px);
+            box-shadow:
+                0 0 12px rgba(246,193,119,0.45),
+                0 0 28px rgba(246,193,119,0.20);
+        }
+    }
+
+    .footer { text-align: center; opacity: 0.75; font-size: 0.85rem; margin-top: 2em; }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# ---------- UI Header ----------
 st.title("✦ Starlight Deck ✦")
 
 st.markdown(
-    """
-    A calm, reflective card experience  
-    guided by intuition and gentle structure.
-    """
+    "<div class='muted' style='text-align:center;'>A calm, reflective card experience<br/>guided by intuition and gentle structure.</div>",
+    unsafe_allow_html=True
 )
 
 st.markdown(
-    '<div style="text-align:center; margin-top:1em;"><span class=".careon {
-    display: inline-block;
-    padding: 0.35em 0.85em;
-    border-radius: 999px;
-
-    background: rgba(246, 193, 119, 0.18);
-    color: #f6c177;
-
-    font-weight: 700;
-    letter-spacing: 0.06em;
-
-    border: 1px solid rgba(246, 193, 119, 0.35);
-
-    box-shadow:
-        0 0 10px rgba(246, 193, 119, 0.55),
-        0 0 22px rgba(246, 193, 119, 0.30);
-
-    text-shadow: 0 0 10px rgba(246, 193, 119, 0.35);
-
-    animation: careonPulse 2.6s ease-in-out infinite;
-}
-
-@keyframes careonPulse {
-    0% {
-        box-shadow:
-            0 0 10px rgba(246,193,119,0.45),
-            0 0 22px rgba(246,193,119,0.25);
-    }
-    50% {
-        box-shadow:
-            0 0 14px rgba(246,193,119,0.70),
-            0 0 30px rgba(246,193,119,0.35);
-    }
-    100% {
-        box-shadow:
-            0 0 10px rgba(246,193,119,0.45),
-            0 0 22px rgba(246,193,119,0.25);
-    }
-}">Careon Ȼ</span></div>',
+    "<div class='careon-pill-wrap'><span class='careon-pill'>Careon Ȼ</span></div>",
     unsafe_allow_html=True
 )
 
 # Status box
 b = bank.load_bank(BANK_PATH)
-status_html = (
-    f'<div class="cardbox">'
-    f'<b>Balance:</b> {b.get("balance", 0)} Ȼ &nbsp;&nbsp; • &nbsp;&nbsp; '
-    f'<b>🌐 SLD Network Fund:</b> {b.get("sld_network_fund", 0)} Ȼ'
-    f'</div>'
+st.markdown(
+    f"""
+    <div class="cardbox" style="text-align:center;">
+        <b>Balance:</b> {b.get("balance", 0)} Ȼ &nbsp;&nbsp; • &nbsp;&nbsp;
+        <b>🌐 SLD Network Fund:</b> {b.get("sld_network_fund", 0)} Ȼ
+    </div>
+    """,
+    unsafe_allow_html=True
 )
-st.markdown(status_html, unsafe_allow_html=True)
 
 st.divider()
 
