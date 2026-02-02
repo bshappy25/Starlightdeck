@@ -5,8 +5,8 @@ import streamlit as st
 import careon_bank_v2 as bank
 import codes_ledger
 
-ui_header.inject_css()
-ui_header.render_header(ticker_items=phrases)
+import ui_header
+ui_header.render_header(ticker_items=phrases)  # or ticker_items=None
 
 # Optional Gemini
 try:
