@@ -111,7 +111,8 @@ def fmt_tx(tx) -> str:
 # -------------------------
 # INIT
 # -------------------------
-bank.ensure_bank_exists(BANK_PATH)
+b0 = bank.load_bank(BANK_PATH)
+bank.save_bank(b0, BANK_PATH)
 init_state()
 
 # -------------------------
