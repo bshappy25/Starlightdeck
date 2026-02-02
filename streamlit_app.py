@@ -769,8 +769,8 @@ if mode == "normal":
 # ============================================================
 # RAPID MODE (fresh, stable, 2-zenith win condition)
 # ============================================================
-if mode == "rapid":
-    st.subheader("⚡ Rapid Mode")
+#if mode == "rapid":
+  #  st.subheader("⚡ Rapid Mode")
 
     # ---- Rapid rules (edit here if needed) ----
     TRIALS = 20
