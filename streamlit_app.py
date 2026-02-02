@@ -70,6 +70,7 @@ st.divider()
 
 st.info("⚙️ Stabilizing build: content below temporarily paused.")
 st.stop()
+
 # -------------------------
 # OPTIONAL GEMINI (Estrella) — Flash Demo
 # -------------------------
@@ -103,6 +104,7 @@ def get_gemini_model():
         return genai.GenerativeModel(MODEL_NAME)
     except Exception:
         return None
+
 
 # -------------------------
 # ADMIN SECRET
