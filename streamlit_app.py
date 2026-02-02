@@ -1,4 +1,4 @@
-import os
+oh import os
 import random
 import streamlit as st
 
@@ -317,6 +317,7 @@ if st.button("Redeem"):
     else:
         st.error(msg)
 
+st.caption("Status: ✅ Admin" if st.session_state.get("admin_ok") else "Status: Guest")
 st.divider()
 
 # -------------------------
@@ -344,7 +345,7 @@ if st.session_state.get("admin_ok"):
 
 st.divider()
 
-st.caption("Status: ✅ Admin" if st.session_state.get("admin_ok") else "Status: Guest")
+
 # -------------------------
 # CLASSIC MODE
 # -------------------------
