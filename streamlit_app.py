@@ -677,35 +677,56 @@ if st.session_state.get("classic_active"):
             st.rerun()
 
 st.divider()
+# ============================================================
+# MODE ROUTER + BRIDGE + RAPID (paste this as your tail block)
+# ============================================================
 
-# ---------- Mode Bridge (between Classic and Rapid) ----------
-# Ensures state doesn't bleed between modes and gives consistent UI rhythm.
-
+# ---- Ensure core session keys exist ----
 st.session_state.setdefault("mode", None)
 st.session_state.setdefault("mode_msg", None)
+st.session_state.setdefault("rapid_last_result", None)  # (status, estrella_line, zenith_count)
+
+# ---- Mode chooser (keep simple + stable) ----
+st.markdown("<div class='cardbox' style='text-align:center;'><b>Choose a mode</b></div>", unsafe_allow_html=True)
+
+c1, c2 = st.columns(2)
+with c1:
+    if st.button("Start Normal"):
+        st.session_state["mode"] = "normal"
+        st.session_state["mode_msg"] = "Normal mode selected."
+        # wipe rapid-only state when switching
+        st.session_state["rapid_last_result"] = None
+        st.rerun()
+
+with c2:
+    if st.button("Start Rapid"):
+        st.session_state["mode"] = "rapid"
+        st.session_state["mode_msg"] = "Rapid mode selected."
+        # wipe rapid-only state (fresh start each switch)
+        st.session_state["rapid_last_result"] = None
+        st.rerun()
 
 mode = st.session_state.get("mode")
 
-# One place to show mode + a soft system message
+# ---- Bridge: consistent banner + safe reset (does NOT touch wallet) ----
 if mode:
     st.markdown(
         f"""
         <div class="cardbox" style="text-align:center;">
-            <div style="font-weight:900; letter-spacing:0.08em; font-size:1.05rem;">
+            <div style="font-weight:900; letter-spacing:0.10em; font-size:1.05rem;">
                 MODE: {mode.upper()}
             </div>
             <div class="muted" style="margin-top:0.35em;">
-                Choose your path. Normal is deliberate. Rapid is a gamble.
+                Normal is deliberate. Rapid is a gamble.
             </div>
         </div>
         """,
         unsafe_allow_html=True
     )
 
-# Reset only the *mode-specific* state (does NOT touch bank)
-if mode:
+    # one-click reset of MODE state ONLY
     if st.button("Reset Mode State (doesn't change wallet)"):
-        # Normal state
+        # Normal keys (only deletes if present)
         for k in [
             "normal_paid", "normal_stats", "normal_draws", "normal_phase",
             "normal_last_card_text", "normal_last_idx", "normal_message", "normal_done"
@@ -713,48 +734,68 @@ if mode:
             if k in st.session_state:
                 del st.session_state[k]
 
-        # Rapid state
-        for k in ["rapid_last_result"]:
-            if k in st.session_state:
-                del st.session_state[k]
+        # Rapid keys
+        if "rapid_last_result" in st.session_state:
+            st.session_state["rapid_last_result"] = None
 
         st.session_state["mode_msg"] = "Mode state reset."
         st.rerun()
 
-# Optional: show mode message once
+# show mode msg once
 if st.session_state.get("mode_msg"):
     st.info(st.session_state["mode_msg"])
     st.session_state["mode_msg"] = None
 
 st.divider()
 
+# ============================================================
+# NORMAL MODE (currently parked; safe placeholder)
+# ============================================================
+if mode == "normal":
+    st.subheader("🃏 Normal Mode")
 
+    st.markdown(
+        """
+        <div class="cardbox">
+            <b>Status:</b> Normal mode is parked for now while Rapid + economy stabilize.<br/>
+            <span class="muted">When you're ready, we’ll wire the real deck engine back in here.</span>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.caption("Tip: Use Rapid Mode to validate the network fund + payout logic first.")
+
+# ============================================================
+# RAPID MODE (fresh, stable, 2-zenith win condition)
+# ============================================================
 if mode == "rapid":
     st.subheader("⚡ Rapid Mode")
 
-    # ---- Rapid rules ----
+    # ---- Rapid rules (edit here if needed) ----
     TRIALS = 20
     CHANCE = 0.05
     COST = 5
     WIN_ZENITHS = 2
 
-    st.write(
-        f"Cost: **{COST} Ȼ** • Roll: **{TRIALS} pulses @ {int(CHANCE*100)}%** • "
-        f"Win condition: **≥ {WIN_ZENITHS} Zeniths**"
+    st.markdown(
+        f"""
+        <div class="cardbox" style="text-align:center;">
+            <div><b>Cost:</b> {COST} Ȼ &nbsp;&nbsp; • &nbsp;&nbsp; <b>Roll:</b> {TRIALS} pulses @ {int(CHANCE*100)}%</div>
+            <div style="margin-top:0.35em;"><b>Win condition:</b> ≥ {WIN_ZENITHS} Zeniths</div>
+            <div class="muted" style="margin-top:0.35em;">
+                Success: +20 Ȼ reward +3 Ȼ completion • Failure: +1 Ȼ completion
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
     )
-    st.write("Success payout: **+20 Ȼ** + **+3 Ȼ completion** • Failure payout: **+1 Ȼ completion**")
 
-    # ---- Session state for results ----
-    st.session_state.setdefault("rapid_last_result", None)  # (status, line, zenith_count)
-
-    # ---- Buttons ----
     cA, cB = st.columns(2)
     run_rapid = cA.button(f"Run Rapid (-{COST} Ȼ)")
-    reset_wallet = cB.button("Reset Wallet")
+    reset_result = cB.button("Clear Last Result")
 
-    if reset_wallet:
-        # Uses your existing helper; if you removed it, delete these 2 lines and handle reset your way
-        reset_bank_file()
+    if reset_result:
         st.session_state["rapid_last_result"] = None
         st.rerun()
 
@@ -764,7 +805,7 @@ if mode == "rapid":
         if b.get("balance", 0) < COST:
             st.error("Not enough Careons to run Rapid Mode.")
         else:
-            # Charge cost (ALL spend funds the network inside bank.spend)
+            # Charge cost (your bank.spend already routes ALL spend into the network fund)
             if not bank.spend(b, COST, note="rapid charge"):
                 st.error("Not enough Careons to run Rapid Mode.")
             else:
@@ -784,7 +825,7 @@ if mode == "rapid":
                 bank.save_bank(b, BANK_PATH)
                 st.rerun()
 
-    # ---- Display result ----
+    # ---- Display rapid result (clean + consistent cardbox) ----
     result = st.session_state.get("rapid_last_result")
     if result:
         status, estrella_line, zenith_count = result
@@ -797,14 +838,22 @@ if mode == "rapid":
         st.markdown(
             f"""
             <div class="cardbox" style="text-align:center;">
-                <div style="font-size:1.05rem; font-weight:800;">{estrella_line}</div>
+                <div style="font-size:1.05rem; font-weight:900; letter-spacing:0.04em;">
+                    {estrella_line}
+                </div>
                 <div class="muted" style="margin-top:0.35em;">
-                    Zeniths rolled: <b>{zenith_count}</b> / {TRIALS}
+                    Zeniths rolled: <b>{zenith_count}</b> / {TRIALS} &nbsp;&nbsp; • &nbsp;&nbsp;
+                    Needed: <b>{WIN_ZENITHS}</b>
                 </div>
             </div>
             """,
             unsafe_allow_html=True
         )
+    else:
+        st.caption("Run Rapid to generate a result.")
+
+# ---- Footer ----
+st.markdown('<div class="footer">Community-powered • Early test build</div>', unsafe_allow_html=True)
 
 
 
