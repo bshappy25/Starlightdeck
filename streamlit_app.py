@@ -327,23 +327,41 @@ current_fund = int(b.get("sld_network_fund", 0))
 GOAL = 1000  # Community fund goal in Careons
 
 # -------------------------
-# COMMUNITY GOAL + BALANCE
+# COMMUNITY GOAL + BALANCE (self-contained, safe)
 # -------------------------
 GOAL = 1000  # community unlock target
 
 b_goal = bank.load_bank(BANK_PATH)
-current_fund = int(b_goal.get("sld_network_fund", 0))
-balance_now = int(b_goal.get("balance", 0))
+current_fund = int(b_goal.get("sld_network_fund", 0) or 0)
+balance_now = int(b_goal.get("balance", 0) or 0)
 
 progress_pct = 0
 if GOAL > 0:
     progress_pct = min(100, int((current_fund / GOAL) * 100))
 
+# Minimal local CSS fallback (in case ui_header CSS isn't loaded yet)
+st.markdown(
+    """
+    <style>
+    .sld-cardbox {
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.10);
+        border-radius: 16px;
+        padding: 14px 16px;
+        margin-top: 12px;
+        backdrop-filter: blur(6px);
+    }
+    .sld-muted { color: rgba(245,245,247,0.80); font-size: 0.95rem; }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 st.markdown(
     f"""
-    <div class="cardbox" style="text-align:center;">
+    <div class="sld-cardbox" style="text-align:center;">
         <b>Community Goal:</b> {current_fund} / {GOAL} Ȼ<br/>
-        <div class="muted" style="margin-top:0.3em;">
+        <div class="sld-muted" style="margin-top:0.3em;">
             When the network reaches {GOAL} Ȼ, a reward code may be released.
         </div>
 
@@ -368,7 +386,7 @@ st.markdown(
 
 st.markdown(
     f"""
-    <div class="cardbox" style="text-align:center;">
+    <div class="sld-cardbox" style="text-align:center;">
         <b>Balance:</b> {balance_now} Ȼ &nbsp;&nbsp; • &nbsp;&nbsp;
         <b>🌐 SLD Network Fund:</b> {current_fund} Ȼ
     </div>
