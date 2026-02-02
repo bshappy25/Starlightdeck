@@ -249,26 +249,23 @@ st.markdown(
     backdrop-filter: blur(6px);
 }
 
-.ticker {
+.ticker-track {
     display: inline-block;
     white-space: nowrap;
     will-change: transform;
-    animation: tickerScroll 22s linear infinite;
-}
-
-.ticker:hover {
-    animation-play-state: paused; /* optional: pause on hover */
+    animation: tickerScroll 18s linear infinite;
+    padding-left: 100%;
 }
 
 @keyframes tickerScroll {
-    0%   { transform: translateX(0%); }
-    100% { transform: translateX(-50%); }
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
 }
 
 .ticker-item {
     display: inline-flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
     font-weight: 800;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -277,25 +274,33 @@ st.markdown(
 
 .dot {
     opacity: 0.55;
-    margin: 0 14px;
+    margin: 0 16px;
 }
 
 .acuity { color: #59a6ff; text-shadow: 0 0 14px rgba(89,166,255,0.22); }
 .valor  { color: #ff5b5b; text-shadow: 0 0 14px rgba(255,91,91,0.18); }
 .variety{ color: #ffe27a; text-shadow: 0 0 14px rgba(255,226,122,0.18); }
-    :root {
-        --bg1: #120A2A;   /* deep purple */
-        --bg2: #1A0F3D;
-        --panel: rgba(255,255,255,0.06);
-        --panelBorder: rgba(255,255,255,0.10);
-        --gold: #f6c177;
-        --gold2: #ffd27a;
-        --text: #f5f5f7;
-        --muted: rgba(245,245,247,0.82);
-        --btn: #3f44c8;
-        --btnHover: #5a5ff0;
-    }
 
+st.markdown(
+    """
+    <div class="ticker-wrap">
+      <div class="ticker-track">
+        <span class="ticker-item">
+          <span class="acuity">ACUITY</span><span class="dot">•</span>
+          <span class="valor">VALOR</span><span class="dot">•</span>
+          <span class="variety">VARIETY</span><span class="dot">•</span>
+          <span class="acuity">ACUITY</span><span class="dot">•</span>
+          <span class="valor">VALOR</span><span class="dot">•</span>
+          <span class="variety">VARIETY</span><span class="dot">•</span>
+          <span class="acuity">ACUITY</span><span class="dot">•</span>
+          <span class="valor">VALOR</span><span class="dot">•</span>
+          <span class="variety">VARIETY</span><span class="dot">•</span>
+        </span>
+      </div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
     .stApp {
         background: radial-gradient(1200px 600px at 50% -10%, rgba(255, 210, 122, 0.12), transparent 60%),
                     linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 100%);
