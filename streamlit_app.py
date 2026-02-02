@@ -1,80 +1,71 @@
 import os
+import random
+from datetime import datetime
+
 import streamlit as st
 
-# -------------------------
-# CORE MODULES
-# -------------------------
 import careon_bank_v2 as bank
 import ui_header
 import careon_bubble
 import careon_market
+import codes_ledger
+
 
 # -------------------------
-# PAGE CONFIG (MUST BE FIRST STREAMLIT CALL)
+# PAGE CONFIG (must be first Streamlit call)
 # -------------------------
-st.set_page_config(
-    page_title="Starlight Deck",
-    layout="centered"
-)
+st.set_page_config(page_title="Starlight Deck", layout="centered")
+
 
 # -------------------------
 # PATHS
 # -------------------------
 HERE = os.path.dirname(os.path.abspath(__file__))
 BANK_PATH = os.path.join(HERE, "careon_bank_v2.json")
+LEDGER_PATH = os.path.join(HERE, "codes_ledger.json")
+
+
+# -------------------------
+# CONSTANTS
+# -------------------------
+GOAL = 1000
+MODEL_NAME = "gemini-2.0-flash"
+
 
 # -------------------------
 # ENSURE BANK FILE EXISTS
 # -------------------------
-b = bank.load_bank(BANK_PATH)
-bank.save_bank(b, BANK_PATH)
+b_init = bank.load_bank(BANK_PATH)
+bank.save_bank(b_init, BANK_PATH)
+
 
 # -------------------------
 # SESSION STATE DEFAULTS
 # -------------------------
 st.session_state.setdefault("show_market", False)
+st.session_state.setdefault("admin_ok", False)
+
+st.session_state.setdefault("show_phrase_box", False)
+
+# Rapid
+st.session_state.setdefault("rapid_last_result", None)  # ("SUCCESS"/"FAILURE", line)
+st.session_state.setdefault("rapid_last_roll", None)
+
+# Classic
+st.session_state.setdefault("classic_active", False)
+st.session_state.setdefault("classic_draws", 0)
+st.session_state.setdefault("classic_vibe_counts", {"acuity": 0, "valor": 0, "variety": 0})
+st.session_state.setdefault("classic_level_counts", {1: 0, 2: 0, 3: 0})
+st.session_state.setdefault("classic_zenith_count", 0)
+st.session_state.setdefault("classic_last_card", None)
+st.session_state.setdefault("estrella_10_response", None)
+st.session_state.setdefault("estrella_20_response", None)
+st.session_state.setdefault("estrella_final_response", None)
+
 
 # -------------------------
-# BUILD TICKER PHRASES
+# GEMINI (Estrella) — Flash Demo
 # -------------------------
-b_for_ticker = bank.load_bank(BANK_PATH)
-phrases = []
-
-for tx in reversed(b_for_ticker.get("history", []) or []):
-    if isinstance(tx, dict) and tx.get("type") == "phrase":
-        meta = tx.get("meta") or {}
-        msg = (meta.get("msg") or "").strip()
-        usr = (meta.get("user") or "").strip()
-        if msg:
-            label = f"{usr.upper()}: {msg}" if usr else msg
-            phrases.append(label)
-    if len(phrases) >= 10:
-        break
-
-# -------------------------
-# TOP UI (HEADER + CAREON MARKET)
-# -------------------------
-ui_header.render_header(ticker_items=phrases)
-careon_bubble.render_bubble()
-careon_market.render_market(bank, BANK_PATH)
-
-# -------------------------
-# DIVIDER — EVERYTHING BELOW IS CONTENT
-# -------------------------
-st.divider()
-
-
-st.divider()
-
-# PASTE COMMUNITY BLOCK HERE
-
-#st.info("⚙️ Stabilizing build: content below temporarily paused.")
-#st.stop()
-
-# -------------------------
-# OPTIONAL GEMINI (Estrella) — Flash Demo
-# -------------------------
-MODEL_NAME = "gemini-2.0-flash"
 GEMINI_API_KEY = None
 GENAI_AVAILABLE = False
 
@@ -94,8 +85,10 @@ if GENAI_AVAILABLE:
 else:
     st.sidebar.info("Gemini not installed — Estrella will be offline.")
 
+
 def gemini_ready() -> bool:
     return GENAI_AVAILABLE and bool(GEMINI_API_KEY)
+
 
 def get_gemini_model():
     if not gemini_ready():
@@ -107,8 +100,12 @@ def get_gemini_model():
 
 
 # -------------------------
-# ADMIN SECRET
+# HELPERS
 # -------------------------
+def now_z() -> str:
+    return datetime.utcnow().isoformat(timespec="seconds") + "Z"
+
+
 def get_admin_secret() -> str | None:
     try:
         pw = st.secrets.get("ADMIN_PASSWORD")
@@ -117,220 +114,89 @@ def get_admin_secret() -> str | None:
     if not pw:
         pw = os.getenv("SLD_ADMIN_PASSWORD")
     return pw
-# Phrase input (<= 20 chars)
-# -----------------------------
-# -----------------------------
-# Donate-to-submit phrase (100Ȼ)
-# -----------------------------
-st.session_state.setdefault("show_phrase_box", False)
 
-if st.button("🤝 Donate to the community (SLDNF)", key="btn_donate_open"):
-    st.session_state["show_phrase_box"] = True
 
-if st.session_state.get("show_phrase_box"):
-    st.markdown("### Community Phrase")
-    st.caption("Max 20 characters • Costs 100Ȼ • Your donation funds the SLD Network Fund (SLDNF).")
+def recent_txs(b: dict, keep: int = 12) -> list:
+    """Bank history is a list; return last `keep` entries safely."""
+    hist = b.get("history", []) or []
+    if not isinstance(hist, list):
+        return []
+    return hist[-keep:]
 
-    new_phrase = st.text_input("Your phrase", max_chars=20, key="phrase_add_input")
 
-    c1, c2 = st.columns(2)
-    submit = c1.button("Submit Phrase (-100Ȼ)", key="phrase_submit_100")
-    cancel = c2.button("Cancel", key="phrase_cancel")
+def fmt_tx(tx) -> str:
+    """Readable history line for dict tx objects."""
+    if isinstance(tx, str):
+        return tx
+    if not isinstance(tx, dict):
+        return str(tx)
+    ts = tx.get("ts", "")
+    t = (tx.get("type") or "").upper()
+    amt = tx.get("amount", 0)
+    note = tx.get("note", "")
+    sign = "-" if tx.get("type") == "spend" else "+"
+    return f"{ts} • {t} {sign}{amt}Ȼ • {note}"
 
-    if cancel:
-        st.session_state["show_phrase_box"] = False
-        st.rerun()
 
-    if submit:
-        p = " ".join((new_phrase or "").strip().split())[:20]
-        if not p:
-            st.error("Type a short phrase first.")
-        else:
-            b2 = bank.load_bank(BANK_PATH)
+def deposit_into_bank(amount: int, note: str) -> None:
+    """
+    Deposit policy:
+      - 95% to user balance
+      - 5% to SLD network fund
+    """
+    amount = int(amount)
+    if amount <= 0:
+        return
 
-            # Spend -> automatically adds 100Ȼ to SLD Network Fund via bank.spend()
-            if bank.spend(b2, 100, note="phrase donation (SLDNF)"):
-                b2.setdefault("history", [])
-                b2["history"].append({
-                    "type": "phrase",
-                    "amount": 0,
-                    "note": "user phrase",
-                    "meta": {"msg": p}
-                })
-                bank.save_bank(b2, BANK_PATH)
+    network_cut = amount // 20  # 5%
+    user_amount = amount - network_cut
 
-                st.session_state["show_phrase_box"] = False
-                st.success("Phrase added. Thank you for donating.")
-                st.rerun()
-            else:
-                st.error("Not enough balance (need 100Ȼ).")
+    b = bank.load_bank(BANK_PATH)
+    b["balance"] = int(b.get("balance", 0)) + user_amount
+    b["sld_network_fund"] = int(b.get("sld_network_fund", 0)) + network_cut
+
+    b.setdefault("history", [])
+    b["history"].append({"ts": now_z(), "type": "fund", "amount": network_cut, "note": f"{note} (network)"})
+    b["history"].append({"ts": now_z(), "type": "earn", "amount": user_amount, "note": f"{note} (user)"})
 
     bank.save_bank(b, BANK_PATH)
+
 
 def rapid_zenith_roll(trials: int = 20, chance: float = 0.05) -> bool:
     return any(random.random() < chance for _ in range(trials))
 
-def init_state():
-    st.session_state.setdefault("admin_ok", False)
-
-    # Rapid
-    st.session_state.setdefault("rapid_last_result", None)  # ("SUCCESS"/"FAILURE", line)
-    st.session_state.setdefault("rapid_last_roll", None)
-
-    # Classic
-    st.session_state.setdefault("classic_active", False)
-    st.session_state.setdefault("classic_draws", 0)
-    st.session_state.setdefault("classic_vibe_counts", {"acuity": 0, "valor": 0, "variety": 0})
-    st.session_state.setdefault("classic_level_counts", {1: 0, 2: 0, 3: 0})
-    st.session_state.setdefault("classic_zenith_count", 0)
-    st.session_state.setdefault("estrella_10_response", None)
-    st.session_state.setdefault("estrella_20_response", None)
-    st.session_state.setdefault("estrella_final_response", None)
-
-def fmt_tx(tx) -> str:
-    if isinstance(tx, str):
-        return tx
-    ts = tx.get("ts", "")
-    t = tx.get("type", "").upper()
-    amt = tx.get("amount", 0)
-    note = tx.get("note", "")
-    sign = "-" if tx.get("type") == "spend" else "+"
-    if tx.get("type") == "fund":
-        sign = "+"
-    return f"{ts} • {t} {sign}{amt}Ȼ • {note}"
 
 # -------------------------
-# INIT
+# BUILD TICKER PHRASES (from bank history)
 # -------------------------
-b0 = bank.load_bank(BANK_PATH)
-bank.save_bank(b0, BANK_PATH)
-init_state()
+b_for_ticker = bank.load_bank(BANK_PATH)
+phrases = []
 
-# -------------------------
-# STYLE / HEADER
-# -------------------------
-st.markdown(
-    """
-    <style>
-    /* ===============================
-       ST★RLIGHT BACKGROUND UPGRADE
-       Purple → Aqua + subtle shimmer
-       =============================== */
+for tx in reversed(b_for_ticker.get("history", []) or []):
+    if isinstance(tx, dict) and tx.get("type") == "phrase":
+        meta = tx.get("meta") or {}
+        msg = (meta.get("msg") or "").strip()
+        usr = (meta.get("user") or "").strip()
+        if msg:
+            label = f"{usr.upper()}: {msg}" if usr else msg
+            phrases.append(label)
+    if len(phrases) >= 12:
+        break
 
-    .stApp {
-        background:
-            radial-gradient(
-                1200px 600px at 20% -10%,
-                rgba(160, 140, 255, 0.22),
-                transparent 60%
-            ),
-            radial-gradient(
-                900px 500px at 80% 10%,
-                rgba(120, 220, 210, 0.20),
-                transparent 55%
-            ),
-            linear-gradient(
-                180deg,
-                #160c3a 0%,
-                #221060 35%,
-                #1a3f6b 65%,
-                #0f4f5c 100%
-            );
-        color: #f5f5f7;
-    }
-
-    /* Soft star shimmer overlay */
-    .stApp::before {
-        content: "";
-        position: fixed;
-        inset: 0;
-        pointer-events: none;
-        background:
-            radial-gradient(circle at 30% 40%, rgba(255,255,255,0.05), transparent 40%),
-            radial-gradient(circle at 70% 60%, rgba(255,255,255,0.04), transparent 45%),
-            radial-gradient(circle at 50% 20%, rgba(255,255,255,0.03), transparent 50%);
-        animation: starlightDrift 48s linear infinite;
-        z-index: 0;
-    }
-
-    @keyframes starlightDrift {
-        0%   { transform: translateY(0px); }
-        50%  { transform: translateY(-12px); }
-        100% { transform: translateY(0px); }
-    }
-
-    /* Ensure content stays above shimmer */
-    .stApp > div {
-        position: relative;
-        z-index: 1;
-    }
-
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-st.markdown(
-    """
-    <div style="
-        text-align:center;
-        font-size: 2.4rem;
-        font-weight: 900;
-        letter-spacing: 0.12em;
-        color: #ffd27a;
-        text-shadow:
-            0 2px 8px rgba(0,0,0,0.6),
-            0 0 22px rgba(246,193,119,0.55),
-            0 0 48px rgba(246,193,119,0.25);
-        margin-top: 0.4em;
-    ">✦ STARLIGHT DECK ✦</div>
-    """,
-    unsafe_allow_html=True
-)
 
 # -------------------------
-# SIDEBAR (controls/admin/dev)
+# TOP UI (render ONCE)
 # -------------------------
-with st.sidebar:
-    st.markdown("### Controls")
+ui_header.render_header(ticker_items=phrases)
+careon_bubble.render_bubble()
+careon_market.render_market(bank, BANK_PATH)
 
-    if st.button("Reset Wallet (25 Ȼ)"):
-        b = {"balance": 25, "sld_network_fund": 0, "history": []}
-        bank.save_bank(b, BANK_PATH)
-        # reset UI state too
-        st.session_state["rapid_last_result"] = None
-        st.session_state["rapid_last_roll"] = None
-        st.session_state["classic_active"] = False
-        st.session_state["estrella_10_response"] = None
-        st.session_state["estrella_20_response"] = None
-        st.session_state["estrella_final_response"] = None
-        st.rerun()
+st.divider()
 
-    st.markdown("---")
-    st.markdown("### Admin")
-
-    admin_pw = st.text_input("Admin password", type="password")
-    if st.button("Unlock Admin"):
-        secret_pw = get_admin_secret()
-        if secret_pw and admin_pw == secret_pw:
-            st.session_state["admin_ok"] = True
-            st.success("Admin unlocked.")
-        else:
-            st.session_state["admin_ok"] = False
-            st.error("Wrong password.")
 
 # -------------------------
-# LOAD BANK ONCE (render pass)
+# COMMUNITY GOAL + BALANCE (clean, single instance)
 # -------------------------
-b = bank.load_bank(BANK_PATH)
-current_fund = int(b.get("sld_network_fund", 0))
-GOAL = 1000  # Community fund goal in Careons
-
-# -------------------------
-# COMMUNITY GOAL + BALANCE (self-contained, safe)
-# -------------------------
-GOAL = 1000  # community unlock target
-
 b_goal = bank.load_bank(BANK_PATH)
 current_fund = int(b_goal.get("sld_network_fund", 0) or 0)
 balance_now = int(b_goal.get("balance", 0) or 0)
@@ -339,32 +205,13 @@ progress_pct = 0
 if GOAL > 0:
     progress_pct = min(100, int((current_fund / GOAL) * 100))
 
-# Minimal local CSS fallback (in case ui_header CSS isn't loaded yet)
-st.markdown(
-    """
-    <style>
-    .sld-cardbox {
-        background: rgba(255,255,255,0.06);
-        border: 1px solid rgba(255,255,255,0.10);
-        border-radius: 16px;
-        padding: 14px 16px;
-        margin-top: 12px;
-        backdrop-filter: blur(6px);
-    }
-    .sld-muted { color: rgba(245,245,247,0.80); font-size: 0.95rem; }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
 st.markdown(
     f"""
-    <div class="sld-cardbox" style="text-align:center;">
+    <div class="cardbox" style="text-align:center;">
         <b>Community Goal:</b> {current_fund} / {GOAL} Ȼ<br/>
-        <div class="sld-muted" style="margin-top:0.3em;">
+        <div class="muted" style="margin-top:0.3em;">
             When the network reaches {GOAL} Ȼ, a reward code may be released.
         </div>
-
         <div style="
             margin-top:0.6em;
             height:10px;
@@ -386,7 +233,7 @@ st.markdown(
 
 st.markdown(
     f"""
-    <div class="sld-cardbox" style="text-align:center;">
+    <div class="cardbox" style="text-align:center;">
         <b>Balance:</b> {balance_now} Ȼ &nbsp;&nbsp; • &nbsp;&nbsp;
         <b>🌐 SLD Network Fund:</b> {current_fund} Ȼ
     </div>
@@ -396,74 +243,102 @@ st.markdown(
 
 st.divider()
 
-ui_header.render_header(ticker_items=phrases)
-careon_bubble.render_bubble()
-careon_market.render_market(bank, BANK_PATH)
+
+# -------------------------
+# SIDEBAR (admin + TGIF)
+# -------------------------
+with st.sidebar:
+    st.markdown("### Admin Access")
+
+    username = st.text_input("Username", placeholder="Enter username", key="admin_username")
+
+    if (username or "").strip().lower() == "bshapp":
+        admin_pw = st.text_input("Admin password", type="password", key="admin_pw_input")
+        if st.button("Unlock Admin", key="admin_unlock_btn"):
+            secret_pw = get_admin_secret()
+            if secret_pw and admin_pw == secret_pw:
+                st.session_state["admin_ok"] = True
+                st.success("Admin unlocked.")
+                st.rerun()
+            else:
+                st.session_state["admin_ok"] = False
+                st.error("Wrong password.")
+    else:
+        st.session_state["admin_ok"] = False
+
+    if st.session_state.get("admin_ok"):
+        st.markdown("---")
+        st.markdown("### Devtool")
+        dev_code = st.text_input("Devtool code", placeholder="TGIF", key="admin_devtool_input")
+
+        if st.button("Apply Devtool", key="admin_devtool_apply"):
+            if (dev_code or "").strip().upper() == "TGIF":
+                b2 = bank.load_bank(BANK_PATH)
+                bank.award_once_per_round(b2, note="devtool-tgif", amount=5)
+                b2.setdefault("history", [])
+                b2["history"].append({"ts": now_z(), "type": "admin", "amount": 5, "note": "TGIF applied"})
+                bank.save_bank(b2, BANK_PATH)
+                st.success("TGIF applied: +5 Ȼ")
+                st.rerun()
+            else:
+                st.error("Unknown devtool code.")
+
+
+# -------------------------
+# DONATE → SUBMIT PHRASE (100Ȼ)
+# -------------------------
+st.markdown("### Community Phrase")
+
+if st.button("🤝 Donate to the community (SLDNF)", key="btn_donate_open"):
+    st.session_state["show_phrase_box"] = True
+
+if st.session_state.get("show_phrase_box"):
+    st.caption("Max 20 characters • Costs 100Ȼ • Donation funds SLD Network Fund (SLDNF).")
+
+    new_phrase = st.text_input("Your phrase", max_chars=20, key="phrase_add_input")
+    user_for_phrase = st.text_input("Name (optional)", max_chars=16, key="phrase_user_input")
+
+    c1, c2 = st.columns(2)
+    submit = c1.button("Submit Phrase (-100Ȼ)", key="phrase_submit_100")
+    cancel = c2.button("Cancel", key="phrase_cancel")
+
+    if cancel:
+        st.session_state["show_phrase_box"] = False
+        st.rerun()
+
+    if submit:
+        p = " ".join((new_phrase or "").strip().split())[:20]
+        u = " ".join((user_for_phrase or "").strip().split())[:16]
+        if not p:
+            st.error("Type a short phrase first.")
+        else:
+            b2 = bank.load_bank(BANK_PATH)
+            if bank.spend(b2, 100, note="phrase donation (SLDNF)"):
+                b2.setdefault("history", [])
+                b2["history"].append({
+                    "ts": now_z(),
+                    "type": "phrase",
+                    "amount": 0,
+                    "note": "user phrase",
+                    "meta": {"msg": p, "user": u}
+                })
+                bank.save_bank(b2, BANK_PATH)
+                st.session_state["show_phrase_box"] = False
+                st.success("Phrase added. Thank you for donating.")
+                st.rerun()
+            else:
+                st.error("Not enough balance (need 100Ȼ).")
+
 st.divider()
 
-# -----------------------------
-# Admin gate (username -> password)
-# -----------------------------
-st.session_state.setdefault("admin_ok", False)
 
-st.markdown("### Admin Access")
-
-username = st.text_input("Username", placeholder="Enter username", key="admin_username")
-
-# Only show password box if username matches
-if (username or "").strip().lower() == "bshapp":
-    admin_pw = st.text_input("Admin password", type="password", key="admin_pw_input")
-
-    if st.button("Unlock Admin", key="admin_unlock_btn"):
-        secret_pw = None
-        try:
-            secret_pw = st.secrets.get("ADMIN_PASSWORD")
-        except Exception:
-            secret_pw = None
-        if not secret_pw:
-            secret_pw = os.getenv("SLD_ADMIN_PASSWORD")
-
-        if secret_pw and admin_pw == secret_pw:
-            st.session_state["admin_ok"] = True
-            st.success("Admin unlocked.")
-            st.rerun()
-        else:
-            st.session_state["admin_ok"] = False
-            st.error("Wrong password.")
-else:
-    # If they change away from bshapp, lock admin
-    st.session_state["admin_ok"] = False
-
-# -----------------------------
-# Admin Devtool (TGIF)
-# -----------------------------
-if st.session_state.get("admin_ok"):
-    st.markdown("#### Devtool (Admin)")
-    dev_code = st.text_input("Devtool code", placeholder="TGIF", key="admin_devtool_input")
-
-    if st.button("Apply Devtool", key="admin_devtool_apply"):
-        if (dev_code or "").strip().upper() == "TGIF":
-            b2 = bank.load_bank(BANK_PATH)
-
-            # +5 to balance (dev/test)
-            bank.award_once_per_round(b2, note="devtool-tgif", amount=5)
-
-            # Optional: log a nice readable line as well
-            b2.setdefault("history", [])
-            b2["history"].append({"type": "admin", "amount": 5, "note": "TGIF applied", "meta": {"msg": "TGIF +5"}})
-
-            bank.save_bank(b2, BANK_PATH)
-            st.success("TGIF applied: +5 Ȼ")
-            st.rerun()
-        else:
-            st.error("Unknown devtool code.")
 # -------------------------
 # DEPOSIT CODES
 # -------------------------
 st.markdown("### Deposit Codes")
 redeem_code = st.text_input("Redeem code", placeholder="DEP-50-XXXXXX", key="redeem_code_input")
 
-if st.button("Redeem"):
+if st.button("Redeem", key="redeem_btn"):
     ok, msg, amt = codes_ledger.redeem_code(LEDGER_PATH, redeem_code, redeemer="web")
     if ok:
         deposit_into_bank(amt, f"redeemed {redeem_code}")
@@ -475,6 +350,7 @@ if st.button("Redeem"):
 st.caption("Status: ✅ Admin" if st.session_state.get("admin_ok") else "Status: Guest")
 st.divider()
 
+
 # -------------------------
 # ADMIN PANEL (codes + rewards)
 # -------------------------
@@ -482,16 +358,16 @@ if st.session_state.get("admin_ok"):
     st.markdown("### Admin Panel")
 
     st.markdown("#### Generate deposit code")
-    amt = st.selectbox("Amount", [25, 50, 100, 250], index=1)
-    if st.button("Generate Code"):
+    amt = st.selectbox("Amount", [25, 50, 100, 250], index=1, key="gen_amt")
+    if st.button("Generate Code", key="gen_code_btn"):
         new_code = codes_ledger.add_code(LEDGER_PATH, int(amt))
         st.code(new_code)
         st.info("Give this code to a user. It can be redeemed once.")
 
     st.markdown("#### Community Reward")
-    b = bank.load_bank(BANK_PATH)
-    if int(b.get("sld_network_fund", 0)) >= GOAL:
-        if st.button("Generate 20Ȼ Reward Code"):
+    b_check = bank.load_bank(BANK_PATH)
+    if int(b_check.get("sld_network_fund", 0)) >= GOAL:
+        if st.button("Generate 20Ȼ Reward Code", key="gen_reward_btn"):
             reward_code = codes_ledger.add_code(LEDGER_PATH, 20)
             st.code(reward_code)
             st.info("Reward code generated. Share intentionally.")
@@ -508,7 +384,7 @@ st.subheader("🌟 Classic Draw Mode")
 st.write("Cost: **1 Ȼ** • Experience: **20 cards** • Estrella speaks at **10 & 20**")
 st.write("Draw cards mindfully. Reflect. Build your question.")
 
-if st.button("Start Classic Journey (-1 Ȼ)"):
+if st.button("Start Classic Journey (-1 Ȼ)", key="classic_start_btn"):
     b = bank.load_bank(BANK_PATH)
     if b.get("balance", 0) < 1:
         st.error("Need 1 Ȼ to start Classic Mode.")
@@ -520,6 +396,7 @@ if st.button("Start Classic Journey (-1 Ȼ)"):
             st.session_state["classic_vibe_counts"] = {"acuity": 0, "valor": 0, "variety": 0}
             st.session_state["classic_level_counts"] = {1: 0, 2: 0, 3: 0}
             st.session_state["classic_zenith_count"] = 0
+            st.session_state["classic_last_card"] = None
             st.session_state["estrella_10_response"] = None
             st.session_state["estrella_20_response"] = None
             st.session_state["estrella_final_response"] = None
@@ -533,16 +410,10 @@ if st.session_state.get("classic_active"):
     st.markdown(f"**Progress:** {draws}/20 cards")
     st.markdown(f"🔵 Acuity: {vc['acuity']} | 🔴 Valor: {vc['valor']} | 🟡 Variety: {vc['variety']}")
 
-    # Draw button
     if draws < 20 and st.button("✨ Draw Card ✨", key=f"classic_draw_{draws}"):
         vibe = random.choice(["acuity", "valor", "variety"])
         roll = random.randint(1, 100)
-        if roll <= 75:
-            level = 1
-        elif roll <= 95:
-            level = 2
-        else:
-            level = 3
+        level = 1 if roll <= 75 else (2 if roll <= 95 else 3)
         zenith = random.random() < 0.05
 
         st.session_state["classic_draws"] += 1
@@ -554,7 +425,6 @@ if st.session_state.get("classic_active"):
         st.session_state["classic_last_card"] = (vibe, level, zenith)
         st.rerun()
 
-    # Display last card (nice UX)
     last = st.session_state.get("classic_last_card")
     if last:
         vibe, level, zenith = last
@@ -580,12 +450,10 @@ if st.session_state.get("classic_active"):
             unsafe_allow_html=True
         )
 
-    # Estrella moments
-    def maybe_estrella_at(step: int):
+    def estrella_checkpoint(step: int) -> str:
         model = get_gemini_model()
         if model is None:
             return "Add GEMINI_API_KEY to hear Estrella's wisdom."
-
         prompt = (
             "Two short paragraphs analyzing the journey.\n"
             f"Vibes: Acuity {vc['acuity']}, Valor {vc['valor']}, Variety {vc['variety']}\n"
@@ -600,28 +468,28 @@ if st.session_state.get("classic_active"):
             return f"Estrella is resting ({e})"
 
     if st.session_state["classic_draws"] >= 10 and st.session_state["estrella_10_response"] is None:
-        st.session_state["estrella_10_response"] = maybe_estrella_at(10)
-        b = bank.load_bank(BANK_PATH)
-        bank.award_once_per_round(b, note="classic-10-estrella", amount=1)
-        bank.save_bank(b, BANK_PATH)
+        st.session_state["estrella_10_response"] = estrella_checkpoint(10)
+        b_aw = bank.load_bank(BANK_PATH)
+        bank.award_once_per_round(b_aw, note="classic-10-estrella", amount=1)
+        bank.save_bank(b_aw, BANK_PATH)
 
     if st.session_state["classic_draws"] >= 20 and st.session_state["estrella_20_response"] is None:
-        st.session_state["estrella_20_response"] = maybe_estrella_at(20)
-        b = bank.load_bank(BANK_PATH)
-        bank.award_once_per_round(b, note="classic-20-estrella", amount=1)
-        bank.save_bank(b, BANK_PATH)
+        st.session_state["estrella_20_response"] = estrella_checkpoint(20)
+        b_aw = bank.load_bank(BANK_PATH)
+        bank.award_once_per_round(b_aw, note="classic-20-estrella", amount=1)
+        bank.save_bank(b_aw, BANK_PATH)
 
-    if st.session_state["estrella_10_response"]:
+    if st.session_state.get("estrella_10_response"):
         st.markdown("### ✨ Estrella ✨")
         st.markdown(f"<div class='cardbox'>{st.session_state['estrella_10_response']}</div>", unsafe_allow_html=True)
 
     if st.session_state["classic_draws"] >= 20:
-        if st.session_state["estrella_20_response"]:
+        if st.session_state.get("estrella_20_response"):
             st.markdown("### ✨ Estrella ✨")
             st.markdown(f"<div class='cardbox'>{st.session_state['estrella_20_response']}</div>", unsafe_allow_html=True)
 
         final_q = st.text_input("Ask Estrella your final question:", key="classic_final_q")
-        if st.button("Submit Question"):
+        if st.button("Submit Question", key="classic_submit_q"):
             model = get_gemini_model()
             if not final_q:
                 st.error("Type a question first.")
@@ -637,9 +505,9 @@ if st.session_state.get("classic_active"):
                 try:
                     resp = model.generate_content(prompt)
                     st.session_state["estrella_final_response"] = getattr(resp, "text", "").strip()
-                    b = bank.load_bank(BANK_PATH)
-                    bank.award_once_per_round(b, note="classic-final-q", amount=1)
-                    bank.save_bank(b, BANK_PATH)
+                    b_aw = bank.load_bank(BANK_PATH)
+                    bank.award_once_per_round(b_aw, note="classic-final-q", amount=1)
+                    bank.save_bank(b_aw, BANK_PATH)
                     st.session_state["classic_active"] = False
                     st.success("Journey complete.")
                     st.rerun()
@@ -649,7 +517,7 @@ if st.session_state.get("classic_active"):
         if st.session_state.get("estrella_final_response"):
             st.markdown(f"<div class='cardbox'>{st.session_state['estrella_final_response']}</div>", unsafe_allow_html=True)
 
-        if st.button("🧹 Clear Journey & Start Fresh"):
+        if st.button("🧹 Clear Journey & Start Fresh", key="classic_clear_btn"):
             st.session_state["classic_active"] = False
             st.session_state["classic_last_card"] = None
             st.session_state["estrella_10_response"] = None
@@ -659,6 +527,7 @@ if st.session_state.get("classic_active"):
 
 st.divider()
 
+
 # -------------------------
 # RAPID MODE
 # -------------------------
@@ -667,8 +536,8 @@ st.write("Cost: **5 Ȼ** • Roll: **20 pulses @ 5%** • Win condition: **≥ 1
 st.write("Success payout: **+20 Ȼ** + **+3 Ȼ completion** • Failure payout: **+1 Ȼ completion**")
 
 c1, c2 = st.columns(2)
-run = c1.button("Run Rapid (-5 Ȼ)")
-clear = c2.button("Clear Result")
+run = c1.button("Run Rapid (-5 Ȼ)", key="rapid_run_btn")
+clear = c2.button("Clear Result", key="rapid_clear_btn")
 
 if clear:
     st.session_state["rapid_last_result"] = None
@@ -677,7 +546,6 @@ if clear:
 
 if run:
     b = bank.load_bank(BANK_PATH)
-
     if b.get("balance", 0) < 5:
         st.error("Not enough Careons to run Rapid Mode.")
     else:
@@ -710,11 +578,12 @@ if st.session_state.get("rapid_last_result"):
 
 st.divider()
 
+
 # -------------------------
-# RECENT ACTIVITY (transaction history)
+# RECENT ACTIVITY
 # -------------------------
-b = bank.load_bank(BANK_PATH)
-txs = bank.recent_txs(b, keep=12)
+b_hist = bank.load_bank(BANK_PATH)
+txs = recent_txs(b_hist, keep=12)
 
 st.markdown("<div class='cardbox'><b>Recent Activity</b></div>", unsafe_allow_html=True)
 if txs:
