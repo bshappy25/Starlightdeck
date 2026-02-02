@@ -71,6 +71,8 @@ def earn(amount: int):
 
 ensure_state()
 b = bank.load_bank(BANK_PATH)
+
+
 # ---------- UI ----------
 st.title("✦ Starlight Deck ✦")
 
