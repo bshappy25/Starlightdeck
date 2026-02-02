@@ -710,46 +710,42 @@ if run:
             st.session_state["rapid_last_roll"] = success
 
             zenith, forced_flag = zenith_check(forced)
+if run:
+    b = bank.load_bank(BANK_PATH)
 
-if zenith:
-    # --- stats ---
-    stats["zenith"] += 1
-    if forced_flag:
-        stats["zenith_forced"] += 1
+    if b.get("balance", 0) < 5:
+        st.error("Not enough Careons to run Rapid Mode.")
+    else:
+        if not bank.spend(b, 5, note="rapid charge"):
+            st.error("Not enough Careons to run Rapid Mode.")
+        else:
+            zenith_count = rapid_zenith_roll(trials=20, chance=0.05)
 
-    # --- shimmer SFX trigger ---
-    st.session_state["sfx_play_id"] = f"zenith-{st.session_state.get('sfx_counter', 0)}"
-    st.session_state["sfx_counter"] = st.session_state.get("sfx_counter", 0) + 1
+            # shimmer SFX if at least one Zenith
+            if zenith_count > 0:
+                st.session_state["sfx_play_id"] = f"rapid-{st.session_state.get('sfx_counter', 0)}"
+                st.session_state["sfx_counter"] = st.session_state.get("sfx_counter", 0) + 1
 
-    # --- visual flag (used by renderer) ---
-    st.session_state["zenith_flash"] = True
-else:
-    st.session_state["zenith_flash"] = False
-if st.session_state.get("zenith_flash"):
-    st.markdown(
-        """
-        <div style="
-            margin-top: 10px;
-            padding: 10px;
-            border-radius: 14px;
-            text-align: center;
-            font-weight: 800;
-            letter-spacing: 0.12em;
-            color: #ffd27a;
-            background: rgba(255, 210, 122, 0.10);
-            box-shadow:
-                0 0 18px rgba(255, 210, 122, 0.75),
-                0 0 42px rgba(255, 210, 122, 0.35);
-        ">
-            ✦ Z E N I T H ✦
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+            if zenith_count >= 2:
+                estrella_line = "★ Estrella ★ Bold move, you will be rewarded kindly."
+                bank.award_once_per_round(b, note="rapid-success-20", amount=20)
+                bank.award_once_per_round(b, note="rapid-completion-bonus", amount=3)
+                st.session_state["last_result"] = (
+                    "SUCCESS",
+                    estrella_line,
+                    zenith_count,
+                )
+            else:
+                estrella_line = "★ Estrella ★ Recklessness can be costly."
+                bank.award_once_per_round(b, note="rapid-fail-completion", amount=1)
+                st.session_state["last_result"] = (
+                    "FAILURE",
+                    estrella_line,
+                    zenith_count,
+                )
 
-            if st.session_state.get("rapid_last_roll") is not None:
-        roll_text = "Zenith appeared ✅" if st.session_state["rapid_last_roll"] else "No Zenith ❌"
-        st.markdown(f"<div class='cardbox'><b>Roll:</b> {roll_text}</div>", unsafe_allow_html=True)
+            bank.save_bank(b, BANK_PATH)
+            st.rerun()
 
             if success:
                 line = "★ Estrella ★ Bold move, you will be rewarded kindly."
