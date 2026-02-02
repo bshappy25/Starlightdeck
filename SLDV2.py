@@ -197,28 +197,34 @@ def bar(n: int, w: int = 20) -> str:
 # DISPLAY
 # =========================
 
-def display_card(vibe: str, level: int, zenith: bool, fields: Dict[str, str], stats: Dict) -> None:
+def display_card_web(i: int, vibe: str, level: int, zenith: bool, fields: Dict[str, str], stats: Dict) -> str:
+    """
+    Streamlit-safe display. Returns a plain-text block.
+    Keeps the same content style as CLI, without colorama/box chars depending on terminal support.
+    """
     c = CARDS[vibe]
-
-    print("\n" + "âœ¨" * 30)
-    print(Fore.MAGENTA + "ðŸŒŸ STARLIGHT DECK ðŸŒŸ" + Style.RESET_ALL)
-    print("âœ¨" * 30)
+    z = "◇ ZENITH ◇" if zenith else ""
 
     vc = stats["vibe"]
-    print(Fore.BLUE + f"ðŸ”µ {bar(vc['acuity'])} {vc['acuity']}")
-    print(Fore.RED + f"ðŸ”´ {bar(vc['valor'])} {vc['valor']}")
-    print(Fore.YELLOW + f"ðŸŸ¡ {bar(vc['variety'])} {vc['variety']}")
+    header = [
+        "✦" * 30,
+        "STARLIGHT DECK",
+        "✦" * 30,
+        f"Card #{i}",
+        "",
+        f"🔵 acuity:  {vc['acuity']}",
+        f"🔴 valor:   {vc['valor']}",
+        f"🟡 variety: {vc['variety']}",
+        "",
+        f"{c['emoji']}  {c['name']}  | Level {level} - {LEVELS[level]['name']}  {z}",
+        "-" * 30,
+    ]
 
-    z = "â—‡ ZENITH â—‡" if zenith else ""
-    print(c["color"] + "â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—")
-    print(c["color"] + f"â•‘   {c['emoji']}  {c['name']:^18} â•‘")
-    print(c["color"] + f"â•‘   Level {level} - {str(LEVELS[level]['name']):^12}  â•‘")
-    print(c["color"] + f"â•‘   {z:^26} â•‘")
-    print(c["color"] + "â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•" + Style.RESET_ALL)
-
-    print()
+    body = []
     for k, v in fields.items():
-        print(c["color"] + f"{k}:" + Style.RESET_ALL, Fore.WHITE + v)
+        body.append(f"{k}: {v}")
+
+    return "\n".join(header + body)
 
 # =========================
 # AI EVENTS
