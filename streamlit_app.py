@@ -486,6 +486,154 @@ st.markdown(
 
 st.divider()
 
+st.divider()
+
+# ---------- Classic Draw Mode ----------
+st.subheader("🌟 Classic Draw Mode")
+
+st.write("Cost: **1 Ȼ** • Experience: **20 cards** • Estrella speaks at **10 & 20**")
+st.write("Draw cards mindfully. Reflect. Build your question.")
+
+if st.button("Start Classic Journey (-1 Ȼ)", key="classic_start"):
+    b = bank.load_bank(BANK_PATH)
+    
+    if b.get("balance", 0) < 1:
+        st.error("Need 1 Ȼ to start Classic Mode.")
+    else:
+        if bank.spend(b, 1, note="classic charge"):
+            st.session_state["classic_active"] = True
+            st.session_state["classic_draws"] = 0
+            st.session_state["classic_vibe_counts"] = {"acuity": 0, "valor": 0, "variety": 0}
+            st.session_state["classic_level_counts"] = {1: 0, 2: 0, 3: 0}
+            st.session_state["classic_zenith_count"] = 0
+            push_history_line(b, "Classic Mode started: -1 Ȼ")
+            bank.save_bank(b, BANK_PATH)
+            st.rerun()
+
+# Classic session UI
+if st.session_state.get("classic_active"):
+    draws = st.session_state["classic_draws"]
+    
+    st.markdown(f"**Progress:** {draws}/20 cards")
+    
+    # Vibe counters
+    vc = st.session_state["classic_vibe_counts"]
+    st.markdown(f"🔵 Acuity: {vc['acuity']} | 🔴 Valor: {vc['valor']} | 🟡 Variety: {vc['variety']}")
+    
+    if draws < 20:
+        if st.button("✨ Draw Card ✨", key=f"classic_draw_{draws}"):
+            # Draw logic
+            vibes = ["acuity", "valor", "variety"]
+            vibe = random.choice(vibes)
+            
+            roll = random.randint(1, 100)
+            if roll <= 75:
+                level = 1
+            elif roll <= 95:
+                level = 2
+            else:
+                level = 3
+            
+            zenith = random.random() < 0.05
+            
+            # Update counts
+            st.session_state["classic_draws"] += 1
+            st.session_state["classic_vibe_counts"][vibe] += 1
+            st.session_state["classic_level_counts"][level] += 1
+            if zenith:
+                st.session_state["classic_zenith_count"] += 1
+            
+            # Display card
+            vibe_colors = {"acuity": "#59a6ff", "valor": "#ff5b5b", "variety": "#ffe27a"}
+            vibe_emoji = {"acuity": "🔵", "valor": "🔴", "variety": "🟡"}
+            level_names = {1: "Common", 2: "Rare", 3: "Legendary"}
+            
+            zenith_text = "◇ ZENITH ◇" if zenith else ""
+            
+            st.markdown(
+                f"""
+                <div class="cardbox" style="border: 2px solid {vibe_colors[vibe]};">
+                    <div style="text-align:center; font-size:1.8rem;">
+                        {vibe_emoji[vibe]} {vibe.upper()}
+                    </div>
+                    <div style="text-align:center; margin-top:0.5em;">
+                        Level {level} - {level_names[level]}
+                    </div>
+                    <div style="text-align:center; color:#ffd27a; margin-top:0.5em; font-weight:900;">
+                        {zenith_text}
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+            
+            # Estrella at card 10
+            if st.session_state["classic_draws"] == 10:
+                st.markdown("### ✨ Estrella ✨")
+                st.markdown("*10-card reflection...*")
+                
+                if GEMINI_API_KEY:
+                    try:
+                        model = genai.GenerativeModel('gemini-pro')
+                        prompt = f"Two short paragraphs reflecting on 10 card draws.\nVibes: {st.session_state['classic_vibe_counts']}\nZenith: {st.session_state['classic_zenith_count']}"
+                        response = model.generate_content(prompt)
+                        st.markdown(f"<div class='cardbox'>{response.text}</div>", unsafe_allow_html=True)
+                        
+                        # Award Careon
+                        b = bank.load_bank(BANK_PATH)
+                        bank.award_once_per_round(b, note="classic-10-estrella", amount=1)
+                        push_history_line(b, "Estrella spoke (10): +1 Ȼ")
+                        bank.save_bank(b, BANK_PATH)
+                    except:
+                        st.warning("Estrella is resting (API unavailable)")
+                else:
+                    st.info("Add GEMINI_API_KEY to hear Estrella's wisdom")
+            
+            st.rerun()
+    
+    # Card 20 finale
+    if draws == 20:
+        st.markdown("### ✨ Estrella ✨")
+        st.markdown("*Journey complete. 20-card analysis...*")
+        
+        if GEMINI_API_KEY:
+            try:
+                model = genai.GenerativeModel('gemini-pro')
+                prompt = f"Two short paragraphs analyzing the journey.\nVibes: {st.session_state['classic_vibe_counts']}\nLevels: {st.session_state['classic_level_counts']}\nZenith: {st.session_state['classic_zenith_count']}"
+                response = model.generate_content(prompt)
+                st.markdown(f"<div class='cardbox'>{response.text}</div>", unsafe_allow_html=True)
+                
+                # Award Careon
+                b = bank.load_bank(BANK_PATH)
+                bank.award_once_per_round(b, note="classic-20-estrella", amount=1)
+                push_history_line(b, "Estrella spoke (20): +1 Ȼ")
+                bank.save_bank(b, BANK_PATH)
+            except:
+                st.warning("Estrella is resting")
+        
+        # Final question
+        final_q = st.text_input("Ask Estrella your final question:", key="classic_final_q")
+        if st.button("Submit Question", key="classic_submit_q"):
+            if final_q and GEMINI_API_KEY:
+                try:
+                    model = genai.GenerativeModel('gemini-pro')
+                    prompt = f"Return exactly five lines:\nIntention:\nForward action:\nPast reflection:\nEnergy level:\nAspirational message:\n\nStats: {st.session_state['classic_vibe_counts']}\nQuestion: {final_q}"
+                    response = model.generate_content(prompt)
+                    st.markdown(f"<div class='cardbox'>{response.text}</div>", unsafe_allow_html=True)
+                    
+                    # Award final Careon
+                    b = bank.load_bank(BANK_PATH)
+                    bank.award_once_per_round(b, note="classic-final-q", amount=1)
+                    push_history_line(b, "Journey complete: +1 Ȼ")
+                    bank.save_bank(b, BANK_PATH)
+                    
+                    st.session_state["classic_active"] = False
+                    st.success("Journey complete! Net: +2 Ȼ")
+                    st.rerun()
+                except:
+                    st.error("Estrella cannot respond")
+
+
 # ---------- Rapid Mode (primary product for now) ----------
 st.subheader("⚡ Rapid Mode")
 
