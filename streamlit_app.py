@@ -320,7 +320,12 @@ if st.session_state.get("show_phrase_box"):
     st.caption("Max 20 characters • Costs 100Ȼ • Donation funds SLD Network Fund (SLDNF).")
 
     new_phrase = st.text_input("Your phrase", max_chars=20, key="phrase_add_input")
-    user_for_phrase = st.text_input("Name (optional)", max_chars=16, key="phrase_user_input")
+    user_for_phrase = st.text_input(
+    "Name (optional)",
+    value=st.session_state.get("username", ""),
+    max_chars=16,
+    key="phrase_user_input"
+)
 
     c1, c2 = st.columns(2)
     submit = c1.button("Submit Phrase (-100Ȼ)", key="phrase_submit_100")
