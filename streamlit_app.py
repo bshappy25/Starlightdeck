@@ -1,19 +1,35 @@
-import google.generativeai as genai
+import os
+import random
+import streamlit as st
+import codes_ledger
+import careon_bank_v2 as bank
 
-# API setup (use Streamlit secrets for security)
-GEMINI_API_KEY = None
+# Try importing genai
 try:
-    GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
-    if GEMINI_API_KEY:
+    import google.generativeai as genai
+    GENAI_AVAILABLE = True
+except ImportError:
+    GENAI_AVAILABLE = False
+    st.warning("google-generativeai not installed")
+
+# ---------- Paths ----------
+HERE = os.path.dirname(os.path.abspath(__file__))
+BANK_PATH = os.path.join(HERE, "careon_bank_v2.json")
+LEDGER_PATH = os.path.join(HERE, "codes_ledger.json")
+
+# ---------- API Setup ----------
+GEMINI_API_KEY = None
+
+if GENAI_AVAILABLE:
+    try:
+        GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
         genai.configure(api_key=GEMINI_API_KEY)
-except Exception as e:
-    st.sidebar.error(f"API key error: {e}")
+    except Exception as e:
+        st.sidebar.warning(f"API key issue: {e}")
 
+# ---------- Page config ----------
+st.set_page_config(page_title="Starlight Deck", layout="centered")
 
-
-
-if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
 
 
 
