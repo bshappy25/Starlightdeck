@@ -335,7 +335,17 @@ b = bank.load_bank(BANK_PATH)
 current_fund = int(b.get("sld_network_fund", 0))
 GOAL = 1000  # Community fund goal in Careons
 
-# Goal card
+# -------------------------
+# COMMUNITY GOAL
+# -------------------------
+GOAL = 1000  # keep this near the top ideally
+
+b_goal = bank.load_bank(BANK_PATH)
+current_fund = int(b_goal.get("sld_network_fund", 0))
+progress_pct = 0
+if GOAL > 0:
+    progress_pct = min(100, int((current_fund / GOAL) * 100))
+
 st.markdown(
     f"""
     <div class="cardbox" style="text-align:center;">
@@ -343,9 +353,20 @@ st.markdown(
         <div class="muted" style="margin-top:0.3em;">
             When the network reaches {GOAL} Ȼ, a reward code may be released.
         </div>
-        <div style="margin-top:0.6em;height:10px;background: rgba(255,255,255,0.08);border-radius: 999px;overflow:hidden;">
-            <div style="width:{progress_pct}%;height:100%;background: linear-gradient(90deg, #f6c177, #ffd27a);
-                box-shadow: 0 0 12px rgba(246,193,119,0.6);"></div>
+
+        <div style="
+            margin-top:0.6em;
+            height:10px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 999px;
+            overflow:hidden;
+        ">
+            <div style="
+                width:{progress_pct}%;
+                height:100%;
+                background: linear-gradient(90deg, #f6c177, #ffd27a);
+                box-shadow: 0 0 12px rgba(246,193,119,0.6);
+            "></div>
         </div>
     </div>
     """,
