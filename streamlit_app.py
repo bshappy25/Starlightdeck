@@ -283,21 +283,26 @@ st.markdown(
 
 st.markdown(
     """
+  st.markdown(
+    """
     <div class="ticker-wrap">
       <div class="ticker-track">
         <span class="ticker-item">
-          <span class="acuity">ACUITY</span><span class="dot">•</span>
-          <span class="valor">VALOR</span><span class="dot">•</span>
-          <span class="variety">VARIETY</span><span class="dot">•</span>
-          <span class="acuity">ACUITY</span><span class="dot">•</span>
-          <span class="valor">VALOR</span><span class="dot">•</span>
-          <span class="variety">VARIETY</span><span class="dot">•</span>
-          <span class="acuity">ACUITY</span><span class="dot">•</span>
-          <span class="valor">VALOR</span><span class="dot">•</span>
-          <span class="variety">VARIETY</span><span class="dot">•</span>
+          <span class="acuity">ACUITY</span><span class="dot">&bull;</span>
+          <span class="valor">VALOR</span><span class="dot">&bull;</span>
+          <span class="variety">VARIETY</span><span class="dot">&bull;</span>
+          <span class="acuity">ACUITY</span><span class="dot">&bull;</span>
+          <span class="valor">VALOR</span><span class="dot">&bull;</span>
+          <span class="variety">VARIETY</span><span class="dot">&bull;</span>
+          <span class="acuity">ACUITY</span><span class="dot">&bull;</span>
+          <span class="valor">VALOR</span><span class="dot">&bull;</span>
+          <span class="variety">VARIETY</span><span class="dot">&bull;</span>
         </span>
       </div>
     </div>
+    """,
+    unsafe_allow_html=True
+)
     """,
     unsafe_allow_html=True
 )
