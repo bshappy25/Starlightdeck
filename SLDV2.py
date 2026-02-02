@@ -168,6 +168,28 @@ def ask_ai(prompt: str, retries: int = 2) -> str:
 # DRAW LOGIC
 # =========================
 
+def make_draw(stats: Dict, forced: bool = False) -> Dict:
+    vibe, level = draw_card()
+    stats["draws"] += 1
+    stats["vibe"][vibe] += 1
+    stats["level"][level] += 1
+
+    zenith, forced_flag = zenith_check(forced)
+
+    if zenith:
+        stats["zenith"] += 1
+    if forced_flag:
+        stats["zenith_forced"] += 1
+
+    fields = get_vibe_fields(vibe, level, zenith)
+
+    return {
+        "vibe": vibe,
+        "level": level,
+        "zenith": zenith,
+        "fields": fields,
+    }
+
 def draw_card() -> Tuple[str, int]:
     vibe = random.choice(list(CARDS.keys()))
 
