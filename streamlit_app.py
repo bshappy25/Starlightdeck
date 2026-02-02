@@ -92,6 +92,20 @@ if st.session_state.get("admin_ok"):
         else:
             st.error("Unknown devtool code.")
 
+# ---------- Admin: Community Reward ----------
+b = bank.load_bank(BANK_PATH)
+if b.get("sld_network_fund", 0) >= 1000:
+    st.markdown("#### 🎁 Community Reward")
+
+    if st.button("Generate 20Ȼ Reward Code", key="gen_reward_code"):
+        reward_code = codes_ledger.add_code(LEDGER_PATH, 20)
+        st.code(reward_code)
+        st.info("Reward code generated. Share intentionally.")
+else:
+    st.markdown(
+        "<div class='muted'>Community reward unlocks at 1000 Ȼ.</div>",
+        unsafe_allow_html=True
+    )
 
 # ---------- Helpers ----------
 def deposit_into_bank(amount: int, note: str) -> None:
