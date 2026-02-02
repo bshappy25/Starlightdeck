@@ -2,12 +2,14 @@ import os
 import random
 import streamlit as st
 
+import codes_ledger
+
 import careon_bank_v2 as bank
 
 # ---------- Paths ----------
 HERE = os.path.dirname(os.path.abspath(__file__))
 BANK_PATH = os.path.join(HERE, "careon_bank_v2.json")
-
+LEDGER_PATH = os.path.join(HERE, "codes_ledger.json")
 # ---------- Page config ----------
 st.set_page_config(page_title="Starlight Deck", layout="centered")
 
