@@ -114,6 +114,10 @@ st.session_state.setdefault("estrella_final_response", None)
 
 st.session_state.setdefault("username", "")
 st.session_state.setdefault("admin_ok", False)
+st.session_state.setdefault("sfx_play_id", None)
+
+
+
 # -------------------------
 # GEMINI (Estrella) — Flash Demo
 # -------------------------
@@ -216,7 +220,10 @@ def deposit_into_bank(amount: int, note: str) -> None:
 def rapid_zenith_roll(trials: int = 20, chance: float = 0.05) -> bool:
     return any(random.random() < chance for _ in range(trials))
 
-
+if st.session_state.get("sfx_play_id", "").startswith("draw-"):
+    play_sfx(SFX_SHIMMER, st.session_state["sfx_play_id"])
+    # clear so it doesn't replay on subsequent reruns
+    st.session_state["sfx_play_id"] = None
 # -------------------------
 # BUILD TICKER PHRASES (from bank history)
 # -------------------------
@@ -492,6 +499,8 @@ st.caption("Status: ✅ Admin" if st.session_state.get("admin_ok") else "Status:
 st.divider()
 
 
+
+
 # -------------------------
 # ADMIN PANEL (codes + rewards)
 # -------------------------
@@ -695,6 +704,11 @@ if run:
         else:
             success = rapid_zenith_roll(trials=20, chance=0.05)
             st.session_state["rapid_last_roll"] = success
+
+            if zenith:
+            st.session_state["sfx_play_id"] = f"zenith-{st.session_state.get('sfx_counter', 0)}"
+            st.session_state["sfx_counter"] = st.session_state.get("sfx_counter", 0) + 1
+
 
             if success:
                 line = "★ Estrella ★ Bold move, you will be rewarded kindly."
