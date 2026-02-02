@@ -568,56 +568,63 @@ if st.session_state.get("classic_active"):
                 unsafe_allow_html=True
             )
             
-          # Estrella at card 10
-if st.session_state["classic_draws"] == 10:
-    if "estrella_10_response" not in st.session_state:
-        st.markdown("### ✨ Estrella ✨")
-        st.markdown("*10-card reflection...*")
-        
-        if GEMINI_API_KEY:
-            try:
-                model = genai.GenerativeModel('gemini-pro')
-                prompt = f"Two short paragraphs reflecting on 10 card draws.\nVibes: {st.session_state['classic_vibe_counts']}\nZenith: {st.session_state['classic_zenith_count']}"
-                response = model.generate_content(prompt)
-                st.session_state["estrella_10_response"] = response.text
+            # Estrella at card 10
+            if st.session_state["classic_draws"] == 10:
+                if "estrella_10_response" not in st.session_state:
+                    st.markdown("### ✨ Estrella ✨")
+                    st.markdown("*10-card reflection...*")
+                    
+                    if GEMINI_API_KEY:
+                        try:
+                            model = genai.GenerativeModel('gemini-pro')
+                            prompt = f"Two short paragraphs reflecting on 10 card draws.\nVibes: {st.session_state['classic_vibe_counts']}\nZenith: {st.session_state['classic_zenith_count']}"
+                            response = model.generate_content(prompt)
+                            st.session_state["estrella_10_response"] = response.text
+                            
+                            # Award Careon
+                            b = bank.load_bank(BANK_PATH)
+                            bank.award_once_per_round(b, note="classic-10-estrella", amount=1)
+                            push_history_line(b, "Estrella spoke (10): +1 Ȼ")
+                            bank.save_bank(b, BANK_PATH)
+                        except Exception as e:
+                            st.session_state["estrella_10_response"] = f"Estrella is resting ({str(e)})"
+                    else:
+                        st.session_state["estrella_10_response"] = "Add GEMINI_API_KEY to hear Estrella's wisdom"
                 
-                # Award Careon
-                b = bank.load_bank(BANK_PATH)
-                bank.award_once_per_round(b, note="classic-10-estrella", amount=1)
-                push_history_line(b, "Estrella spoke (10): +1 Ȼ")
-                bank.save_bank(b, BANK_PATH)
-            except Exception as e:
-                st.session_state["estrella_10_response"] = f"Estrella is resting ({str(e)})"
-        else:
-            st.session_state["estrella_10_response"] = "Add GEMINI_API_KEY to hear Estrella's wisdom"
-    
-    # Always display if it exists
-    if "estrella_10_response" in st.session_state:
-        st.markdown("### ✨ Estrella ✨")
-        st.markdown(f"<div class='cardbox'>{st.session_state['estrella_10_response']}</div>", unsafe_allow_html=True)
-
-st.rerun()
-
+                # Always display if it exists
+                if "estrella_10_response" in st.session_state:
+                    st.markdown("### ✨ Estrella ✨")
+                    st.markdown(f"<div class='cardbox'>{st.session_state['estrella_10_response']}</div>", unsafe_allow_html=True)
+            
+            st.rerun()
     
     # Card 20 finale
     if draws == 20:
-        st.markdown("### ✨ Estrella ✨")
-        st.markdown("*Journey complete. 20-card analysis...*")
+        if "estrella_20_response" not in st.session_state:
+            st.markdown("### ✨ Estrella ✨")
+            st.markdown("*Journey complete. 20-card analysis...*")
+            
+            if GEMINI_API_KEY:
+                try:
+                    model = genai.GenerativeModel('gemini-pro')
+                    prompt = f"Two short paragraphs analyzing the journey.\nVibes: {st.session_state['classic_vibe_counts']}\nLevels: {st.session_state['classic_level_counts']}\nZenith: {st.session_state['classic_zenith_count']}"
+                    response = model.generate_content(prompt)
+                    st.session_state["estrella_20_response"] = response.text
+                    
+                    # Award Careon
+                    b = bank.load_bank(BANK_PATH)
+                    bank.award_once_per_round(b, note="classic-20-estrella", amount=1)
+                    push_history_line(b, "Estrella spoke (20): +1 Ȼ")
+                    bank.save_bank(b, BANK_PATH)
+                except Exception as e:
+                    st.session_state["estrella_20_response"] = f"Estrella is resting ({str(e)})"
+            else:
+                st.session_state["estrella_20_response"] = "Add GEMINI_API_KEY to hear Estrella's wisdom"
         
-        if GEMINI_API_KEY:
-            try:
-                model = genai.GenerativeModel('gemini-pro')
-                prompt = f"Two short paragraphs analyzing the journey.\nVibes: {st.session_state['classic_vibe_counts']}\nLevels: {st.session_state['classic_level_counts']}\nZenith: {st.session_state['classic_zenith_count']}"
-                response = model.generate_content(prompt)
-                st.markdown(f"<div class='cardbox'>{response.text}</div>", unsafe_allow_html=True)
-                
-                # Award Careon
-                b = bank.load_bank(BANK_PATH)
-                bank.award_once_per_round(b, note="classic-20-estrella", amount=1)
-                push_history_line(b, "Estrella spoke (20): +1 Ȼ")
-                bank.save_bank(b, BANK_PATH)
-            except:
-                st.warning("Estrella is resting")
+        # Always display if it exists
+        if "estrella_20_response" in st.session_state:
+            st.markdown("### ✨ Estrella ✨")
+            st.markdown(f"<div class='cardbox'>{st.session_state['estrella_20_response']}</div>", unsafe_allow_html=True)
         
         # Final question
         final_q = st.text_input("Ask Estrella your final question:", key="classic_final_q")
@@ -627,7 +634,7 @@ st.rerun()
                     model = genai.GenerativeModel('gemini-pro')
                     prompt = f"Return exactly five lines:\nIntention:\nForward action:\nPast reflection:\nEnergy level:\nAspirational message:\n\nStats: {st.session_state['classic_vibe_counts']}\nQuestion: {final_q}"
                     response = model.generate_content(prompt)
-                    st.markdown(f"<div class='cardbox'>{response.text}</div>", unsafe_allow_html=True)
+                    st.session_state["estrella_final_response"] = response.text
                     
                     # Award final Careon
                     b = bank.load_bank(BANK_PATH)
@@ -637,10 +644,12 @@ st.rerun()
                     
                     st.session_state["classic_active"] = False
                     st.success("Journey complete! Net: +2 Ȼ")
-                    st.rerun()
-                except:
-                    st.error("Estrella cannot respond")
-
+                except Exception as e:
+                    st.error(f"Estrella cannot respond ({str(e)})")
+        
+        # Display final response if exists
+        if "estrella_final_response" in st.session_state:
+            st.markdown(f"<div class='cardbox'>{st.session_state['estrella_final_response']}</div>", unsafe_allow_html=True)
 
 # ---------- Rapid Mode (primary product for now) ----------
 st.subheader("⚡ Rapid Mode")
