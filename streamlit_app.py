@@ -43,6 +43,10 @@ BANK_PATH = os.path.join(HERE, "careon_bank_v2.json")
 PROFILE_PATH = os.path.join(HERE, "user_profile.json")
 LEDGER_PATH = os.path.join(HERE, "codes_ledger.json")
 
+pid = st.session_state.get("sfx_play_id")
+if pid:
+    play_sfx(SFX_SHIMMER, pid)
+    st.session_state["sfx_play_id"] = None
 
 # -------------------------
 # CONSTANTS
