@@ -1,1 +1,3 @@
 streamlit
+
+Add requirements.txt for Streamlit
