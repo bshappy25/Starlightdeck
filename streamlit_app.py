@@ -333,7 +333,7 @@ with st.sidebar:
 # -------------------------
 b = bank.load_bank(BANK_PATH)
 current_fund = int(b.get("sld_network_fund", 0))
-progress_pct = min(100, int((current_fund / GOAL) * 100))
+GOAL = 1000  # Community fund goal in Careons
 
 # Goal card
 st.markdown(
