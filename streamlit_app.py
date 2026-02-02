@@ -206,6 +206,27 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+.careon {
+    display: inline-block;
+    padding: 0.35em 0.85em;
+    border-radius: 999px;
+
+    background: rgba(246, 193, 119, 0.18);
+    color: #f6c177;
+
+    font-weight: 700;
+    letter-spacing: 0.06em;
+
+    border: 1px solid rgba(246, 193, 119, 0.35);
+
+    /* ✨ Yellow glow */
+    box-shadow:
+        0 0 10px rgba(246, 193, 119, 0.55),
+        0 0 22px rgba(246, 193, 119, 0.30);
+
+    /* optional: text glow for extra pop */
+    text-shadow: 0 0 10px rgba(246, 193, 119, 0.35);
+}
 # Status box
 b = bank.load_bank(BANK_PATH)
 status_html = (
