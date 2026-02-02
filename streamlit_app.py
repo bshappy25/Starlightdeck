@@ -250,7 +250,64 @@ progress_pct = 0
 if GOAL > 0:
     progress_pct = min(100, int((current_fund / GOAL) * 100))
 
+# ---------- Style ----------
+st.markdown(
+    r"""
+    <style>
+    :root {
+        --bg1: #120A2A;
+        --bg2: #1A0F3D;
+        --panel: rgba(255,255,255,0.06);
+        --panelBorder: rgba(255,255,255,0.10);
+        --gold2: #ffd27a;
+        --btn: #3f44c8;
+        --btnHover: #5a5ff0;
+        --text: #f5f5f7;
+        --muted: rgba(245,245,247,0.82);
+    }
 
+    .stApp {
+        background: linear-gradient(180deg, var(--bg1), var(--bg2));
+        color: var(--text);
+    }
+
+    .muted { color: var(--muted); }
+
+    .cardbox {
+        background: var(--panel);
+        border: 1px solid var(--panelBorder);
+        border-radius: 16px;
+        padding: 14px 16px;
+        margin-top: 12px;
+    }
+
+    /* Buttons */
+    .stButton > button {
+        background-color: var(--btn);
+        color: white;
+        border-radius: 14px;
+        padding: 0.65em 1.2em;
+        border: none;
+        font-size: 1.05rem;
+        transition: all 0.2s ease;
+        width: 100%;
+    }
+    .stButton > button:hover {
+        background-color: var(--btnHover);
+        transform: scale(1.01);
+    }
+
+    /* Subtle audio bar */
+    div[data-testid="stAudio"] audio {
+        height: 26px;
+        opacity: 0.75;
+        border-radius: 12px;
+    }
+
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 st.markdown(
     f"""
     <div class="cardbox" style="text-align:center;">
@@ -287,46 +344,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.markdown(
-    r"""
-    <style>
-    :root {
-        --bg1: #120A2A;
-        --bg2: #1A0F3D;
-        --panel: rgba(255,255,255,0.06);
-        --panelBorder: rgba(255,255,255,0.10);
-        --gold2: #ffd27a;
-        --btn: #3f44c8;
-        --btnHover: #5a5ff0;
-    }
 
-    .stApp {
-        background: linear-gradient(180deg, var(--bg1), var(--bg2));
-        color: white;
-    }
-
-    .cardbox {
-        background: var(--panel);
-        border: 1px solid var(--panelBorder);
-        border-radius: 16px;
-        padding: 14px 16px;
-    }
-
-    /* more css... */
-
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-st.divider()
-
-/* Make Streamlit audio player subtle */
-div[data-testid="stAudio"] audio {
-    height: 26px;
-    opacity: 0.75;
-    border-radius: 12px;
-}
 
 # -------------------------
 # SIDEBAR (admin + TGIF)
