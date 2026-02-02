@@ -57,6 +57,37 @@ MODEL_NAME = "gemini-2.0-flash"
 b_init = bank.load_bank(BANK_PATH)
 bank.save_bank(b_init, BANK_PATH)
 
+import base64
+import os
+import streamlit as st
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+SFX_SHIMMER = os.path.join(HERE, "assets", "shimmer.mp3")
+
+@st.cache_data
+def _b64_audio(path: str) -> str:
+    with open(path, "rb") as f:
+        return base64.b64encode(f.read()).decode("utf-8")
+
+def play_sfx(path: str, play_id: str, volume: float = 0.75):
+    """
+    Hidden, one-shot SFX player.
+    `play_id` must change to replay the sound.
+    """
+    if not os.path.exists(path):
+        return
+
+    b64 = _b64_audio(path)
+    # key: include play_id so it rerenders when you want it to play again
+    st.markdown(
+        f"""
+        <audio autoplay>
+          <source src="data:audio/mpeg;base64,{b64}" type="audio/mpeg">
+        </audio>
+        """,
+        unsafe_allow_html=True
+    )
+
 
 # -------------------------
 # SESSION STATE DEFAULTS
