@@ -1,14 +1,9 @@
 import streamlit as st
 
 def render_bubble():
-    """
-    Sleek Careon bubble toggle.
-    - No numbers
-    - Just: Careon Ȼ
-    - Toggles st.session_state['show_market']
-    """
     st.session_state.setdefault("show_market", False)
 
+    # CSS for sleek bubble
     st.markdown(
         """
         <style>
@@ -19,14 +14,15 @@ def render_bubble():
             margin-bottom: 0.55rem;
         }
 
-        /* Make bubble button look like a glowing pill */
         .careon-bubble-row .stButton > button {
             width: auto !important;
-            padding: 0.55em 1.10em !important;
+            padding: 0.56em 1.12em !important;
             border-radius: 999px !important;
 
-            background: linear-gradient(90deg, rgba(180,130,255,0.18), rgba(120,220,210,0.14)) !important;
-            background-color: rgba(246,193,119,0.14) !important;
+            background: linear-gradient(90deg,
+              rgba(180,130,255,0.18),
+              rgba(120,220,210,0.14)
+            ) !important;
 
             color: #ffd27a !important;
             font-weight: 950 !important;
@@ -56,7 +52,9 @@ def render_bubble():
         unsafe_allow_html=True
     )
 
+    label = "Careon Ȼ" + (" ✦" if st.session_state.get("show_market") else "")
+
     st.markdown("<div class='careon-bubble-row'>", unsafe_allow_html=True)
-    if st.button("Careon Ȼ", key="careon_bubble_btn"):
+    if st.button(label, key="__sld__careon_market_toggle_btn"):
         st.session_state["show_market"] = not st.session_state.get("show_market", False)
     st.markdown("</div>", unsafe_allow_html=True)
