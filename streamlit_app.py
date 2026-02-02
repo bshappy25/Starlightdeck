@@ -344,6 +344,7 @@ if st.session_state.get("admin_ok"):
 
 st.divider()
 
+st.caption("Status: ✅ Admin" if st.session_state.get("admin_ok") else "Status: Guest")
 # -------------------------
 # CLASSIC MODE
 # -------------------------
