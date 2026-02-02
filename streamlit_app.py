@@ -288,17 +288,7 @@ st.markdown(
 
 st.divider()
 
-/* Make Streamlit audio player less ugly */
-div[data-testid="stAudio"] audio {
-    height: 26px;                 /* slimmer bar */
-    opacity: 0.75;
-    filter: saturate(0.9) contrast(0.95);
-    border-radius: 12px;
-}
 
-div[data-testid="stAudio"] {
-    margin-top: 0.2rem;
-}
 
 # -------------------------
 # SIDEBAR (admin + TGIF)
