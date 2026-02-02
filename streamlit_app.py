@@ -66,6 +66,29 @@ def deposit_into_bank(amount: int, note: str) -> None:
     user_amount = amount - network_cut
 
     b = bank.load_bank(BANK_PATH)
+    
+    # -----------------------------
+# Phrase input (<= 20 chars)
+# -----------------------------
+st.markdown("### Add a phrase")
+new_phrase = st.text_input("Max 20 characters", max_chars=20, key="phrase_add_input")
+
+if st.button("Add Phrase", key="phrase_add_btn"):
+    p = " ".join((new_phrase or "").strip().split())[:20]
+    if not p:
+        st.error("Type a short phrase first.")
+    else:
+        b2 = bank.load_bank(BANK_PATH)
+        b2.setdefault("history", [])
+        b2["history"].append({
+            "type": "phrase",
+            "amount": 0,
+            "note": "user phrase",
+            "meta": {"msg": p}
+        })
+        bank.save_bank(b2, BANK_PATH)
+        st.success("Phrase added.")
+        st.rerun()
     bank.earn(b, user_amount, note=f"deposit: {note} (+{user_amount})")
     b["sld_network_fund"] = int(b.get("sld_network_fund", 0)) + int(network_cut)
 
