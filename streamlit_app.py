@@ -12,6 +12,18 @@ import codes_ledger
 
 import streamlit as st
 
+import os
+import streamlit as st
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+AUDIO_PATH = os.path.join(HERE, "assets", "ambient.mp3")
+
+if os.path.exists(AUDIO_PATH):
+    with open(AUDIO_PATH, "rb") as f:
+        st.audio(f.read(), format="audio/mp3", loop=True)
+else:
+    st.caption("🎧 Ambient audio not found.")
+
 st.audio("assets/ambient.mp3", loop=True)
 # -------------------------
 # PAGE CONFIG (must be first Streamlit call)
