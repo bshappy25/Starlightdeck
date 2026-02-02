@@ -676,6 +676,16 @@ if st.session_state.get("classic_active"):
         if "estrella_final_response" in st.session_state:
             st.markdown(f"<div class='cardbox'>{st.session_state['estrella_final_response']}</div>", unsafe_allow_html=True)
 
+        # Cleanup button
+        if st.button("🧹 Clear Journey & Start Fresh", key="classic_cleanup"):
+            st.session_state["classic_active"] = False
+            st.session_state.pop("estrella_10_response", None)
+            st.session_state.pop("estrella_20_response", None)
+            st.session_state.pop("estrella_final_response", None)
+            st.success("Journey cleared! Ready for a new one.")
+            st.rerun()
+
+
 # ---------- Rapid Mode (primary product for now) ----------
 st.subheader("⚡ Rapid Mode")
 
