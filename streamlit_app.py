@@ -6,7 +6,7 @@ import careon_bank_v2 as bank
 import codes_ledger
 
 import ui_header
-ui_header.render_header(ticker_items=phrases)  # or ticker_items=None
+ui_header.render_header()
 
 # Optional Gemini
 try:
