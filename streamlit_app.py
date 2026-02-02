@@ -6,8 +6,8 @@ import careon_bank_v2 as bank
 import codes_ledger
 
 import ui_header
-ui_header.inject_css()
-ui_header.render_header()
+ui_header.inject_css(ticker_speed_s=75)
+ui_header.render_header(ticker_items=phrases)  # phrases can be []
 
 # Optional Gemini
 try:
