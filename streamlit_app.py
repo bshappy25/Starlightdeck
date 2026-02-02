@@ -9,6 +9,7 @@ import careon_store
 
 import ui_header
 ui_header.render_header()
+careon_store.render_store(bank, BANK_PATH)
 
 # Optional Gemini
 try:
