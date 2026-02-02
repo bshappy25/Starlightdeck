@@ -198,6 +198,43 @@ careon_bubble.render_bubble()
 # ========== MARKET (if open) ==========
 careon_market.render_market(bank, BANK_PATH)
 
+# -------------------------
+# TOP UI (render ONCE)
+# -------------------------
+import audio_ambience
+import vip_status
+
+ui_header.render_header(ticker_items=phrases)
+careon_bubble.render_bubble()
+careon_market.render_market(bank, BANK_PATH)
+
+# Audio controls (floating bottom-right)
+audio_ambience.render_audio_controls()
+
+st.divider()
+
+# VIP Status Badge (after username section, around line 220)
+# Replace the username section with:
+name = st.text_input(
+    "Username",
+    value=st.session_state.get("username", ""),
+    placeholder="Type a name (e.g., KingQuantum)",
+    max_chars=16,
+    key="username_input"
+).strip()
+
+st.session_state["username"] = name
+
+# Show VIP badge
+b_for_vip = bank.load_bank(BANK_PATH)
+vip_status.render_vip_badge(b_for_vip.get("balance", 0), name)
+
+# Auto-admin if username matches
+if name.lower() in {"bshappy", "bshapp"}:
+    st.session_state["admin_ok"] = True
+    st.caption("Status: ✅ Admin")
+else:
+    st.session_state["admin_ok"] = False
 
 
 # -------------------------
