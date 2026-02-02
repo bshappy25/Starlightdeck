@@ -29,6 +29,11 @@ if st.button("Redeem", key="redeem_btn"):
 st.markdown("---")
 
 st.markdown(
+    "<div class='muted'>Admin: <b>bshapp</b></div>",
+    unsafe_allow_html=True
+)
+
+st.markdown(
     """
     <div style="
         text-align:center;
