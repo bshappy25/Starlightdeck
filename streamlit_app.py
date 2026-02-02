@@ -708,9 +708,13 @@ with c2:
 
 mode = st.session_state.get("mode")
 
+# ============================================================
+# MODE ROUTER + BRIDGE + NORMAL PLACEHOLDER + RAPID MODE (END)
+# ============================================================
+
 # ---- Bridge: consistent banner + safe reset (does NOT touch wallet) ----
 if mode:
-st.markdown(
+    st.markdown(
         f"""
         <div class="cardbox" style="text-align:center;">
             <div style="font-weight:900; letter-spacing:0.10em; font-size:1.05rem;">
@@ -735,8 +739,7 @@ st.markdown(
                 del st.session_state[k]
 
         # Rapid keys
-        if "rapid_last_result" in st.session_state:
-            st.session_state["rapid_last_result"] = None
+        st.session_state["rapid_last_result"] = None
 
         st.session_state["mode_msg"] = "Mode state reset."
         st.rerun()
@@ -749,7 +752,7 @@ if st.session_state.get("mode_msg"):
 st.divider()
 
 # ============================================================
-# NORMAL MODE (currently parked; safe placeholder)
+# NORMAL MODE (parked; safe placeholder)
 # ============================================================
 if mode == "normal":
     st.subheader("🃏 Normal Mode")
@@ -767,16 +770,18 @@ if mode == "normal":
     st.caption("Tip: Use Rapid Mode to validate the network fund + payout logic first.")
 
 # ============================================================
-# RAPID MODE (fresh, stable, 2-zenith win condition)
+# RAPID MODE (stable, 2-zenith win condition)
 # ============================================================
 if mode == "rapid":
-  #  st.subheader("⚡ Rapid Mode")
+    st.subheader("⚡ Rapid Mode")
 
-    # ---- Rapid rules (edit here if needed) ----
+    # ---- Rapid rules ----
     TRIALS = 20
     CHANCE = 0.05
     COST = 5
     WIN_ZENITHS = 2
+
+    st.session_state.setdefault("rapid_last_result", None)  # (status, estrella_line, zenith_count)
 
     st.markdown(
         f"""
@@ -805,7 +810,7 @@ if mode == "rapid":
         if b.get("balance", 0) < COST:
             st.error("Not enough Careons to run Rapid Mode.")
         else:
-            # Charge cost (your bank.spend already routes ALL spend into the network fund)
+            # Charge cost (ALL spend funds the network inside your bank.spend)
             if not bank.spend(b, COST, note="rapid charge"):
                 st.error("Not enough Careons to run Rapid Mode.")
             else:
@@ -825,7 +830,7 @@ if mode == "rapid":
                 bank.save_bank(b, BANK_PATH)
                 st.rerun()
 
-    # ---- Display rapid result (clean + consistent cardbox) ----
+    # ---- Display result ----
     result = st.session_state.get("rapid_last_result")
     if result:
         status, estrella_line, zenith_count = result
@@ -854,6 +859,7 @@ if mode == "rapid":
 
 # ---- Footer ----
 st.markdown('<div class="footer">Community-powered • Early test build</div>', unsafe_allow_html=True)
+
 
 
 
