@@ -14,39 +14,63 @@ LEDGER_PATH = os.path.join(HERE, "codes_ledger.json")
 st.set_page_config(page_title="Starlight Deck", layout="centered")
 
 # ---------- Style ----------
-st.markdown(
-    """
-    <style>
-    .stApp {
-        background: linear-gradient(180deg, #0f1021 0%, #1b1d3a 100%);
-        color: #f5f5f7;
-    }
-    h1 { color: #f6c177; text-align: center; letter-spacing: 0.05em; }
-    p, li, span, div { color: #e6e6eb; font-size: 1.05rem; }
-    .stButton > button {
-        background-color: #3f44c8; color: white; border-radius: 12px;
-        padding: 0.6em 1.2em; border: none; font-size: 1.05rem;
-        transition: all 0.2s ease;
-        width: 100%;
-    }
-    .stButton > button:hover { background-color: #5a5ff0; transform: scale(1.01); }
-    .careon {
-        display: inline-block; padding: 0.35em 0.75em; border-radius: 999px;
-        background: rgba(246, 193, 119, 0.15); color: #f6c177;
-        font-weight: 600; letter-spacing: 0.04em;
-    }
-    .cardbox {
-        background: rgba(255,255,255,0.06);
-        border: 1px solid rgba(255,255,255,0.08);
-        border-radius: 14px;
-        padding: 14px 16px;
-        margin-top: 12px;
-    }
-    .footer { text-align: center; opacity: 0.75; font-size: 0.85rem; margin-top: 2em; }
-    .muted { opacity: 0.8; font-size: 0.95rem; }
-    </style>
-    """,
-    unsafe_allow_html=True
+st.markdown("### Deposit Codes")
+
+redeem_code = st.text_input("Redeem code", placeholder="DEP-50-XXXXXX", key="redeem_code_input")
+if st.button("Redeem", key="redeem_btn"):
+    ok, msg, amt = codes_ledger.redeem_code(LEDGER_PATH, redeem_code, redeemer="web")
+    if ok:
+        deposit_into_bank(amt, f"Deposit redeemed: +{amt} Ȼ (code)")
+        st.success(f"{msg} +{amt} Ȼ added.")
+        st.rerun()
+    else:
+        st.error(msg)
+
+st.markdown("---")
+st.markdown("### Admin")
+
+# Admin login (password checked against secrets/env)
+admin_pw = st.text_input("Admin password", type="password", key="admin_pw_input")
+if st.button("Unlock Admin", key="admin_unlock_btn"):
+    secret_pw = None
+    try:
+        secret_pw = st.secrets.get("ADMIN_PASSWORD")
+    except Exception:
+        secret_pw = None
+    if not secret_pw:
+        secret_pw = os.getenv("SLD_ADMIN_PASSWORD")
+
+    if secret_pw and admin_pw == secret_pw:
+        st.session_state["admin_ok"] = True
+        st.success("Admin unlocked.")
+        st.rerun()
+    else:
+        st.session_state["admin_ok"] = False
+        st.error("Wrong password.")
+
+if st.session_state.get("admin_ok"):
+    st.markdown("#### Generate deposit code")
+    amt = st.selectbox("Amount", [25, 50, 100, 250], index=1, key="gen_amt")
+    if st.button("Generate Code", key="gen_code_btn"):
+        new_code = codes_ledger.add_code(LEDGER_PATH, int(amt))
+        st.code(new_code)
+        st.info("Give this code to a user. It can be redeemed once.")
+
+    st.markdown("#### Devtool (Admin only)")
+    dev = st.text_input("Devtool code", placeholder="TGIF", key="admin_devtool_input")
+    if st.button("Apply Devtool", key="admin_devtool_apply"):
+        if (dev or "").strip().upper() == "TGIF":
+            # TGIF adds +5 to balance (and optionally network fund — you choose)
+            # I recommend: balance only (dev/test), NOT network fund.
+            b2 = bank.load_bank(BANK_PATH)
+            b2["balance"] = int(b2.get("balance", 0)) + 5
+            b2.setdefault("history", [])
+            b2["history"].append("TGIF (admin): +5 Ȼ")
+            bank.save_bank(b2, BANK_PATH)
+            st.success("TGIF applied: +5 Ȼ")
+            st.rerun()
+        else:
+            st.error("Unknown devtool code.")
 )
 
 # ---------- Helpers ----------
