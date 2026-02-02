@@ -33,3 +33,6 @@ with col2:
     st.button("Start Rapid")
 
 st.caption("Careon Ȼ • Community-powered • Test deployment")
+
+Add minimal Streamlit landing page
+
