@@ -10,7 +10,15 @@ BANK_PATH = os.path.join(HERE, "careon_bank_v2.json")
 
 
 # ---------- Page config ----------
-st.set_page_config(page_title="Starlight Deck", layout="centered")
+st.markdown(
+    f"""
+    <div class="cardbox">
+      <b>Balance:</b> {b.get("balance", 0)} Ȼ &nbsp;&nbsp; • &nbsp;&nbsp;
+      <b>🌐 SLD Network Fund:</b> {b.get("sld_network_fund", 0)} Ȼ
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 # ---------- Style ----------
 st.markdown(
