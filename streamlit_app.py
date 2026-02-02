@@ -138,25 +138,31 @@ if mode == "rapid":
         st.rerun()
 
     if run:
-        if st.session_state["balance"] < 5:
+        # Reload latest bank each click (safe)
+        b = bank.load_bank(BANK_PATH)
+
+        if b.get("balance", 0) < 5:
             st.error("Not enough Careons to run Rapid Mode.")
         else:
-            # Pay entry (funds the network)
-            spend(5)
-
-            success = rapid_zenith_roll(trials=20, chance=0.05)
-
-            if success:
-                estrella_line = "★ Estrella ★ Bold move, you will be rewarded kindly."
-                earn(20)
-                earn(3)
-                st.session_state["last_result"] = ("SUCCESS", estrella_line)
+            # Pay entry (ALL spend funds the network)
+            ok = bank.spend(b, 5, note="rapid charge")
+            if not ok:
+                st.error("Not enough Careons to run Rapid Mode.")
             else:
-                estrella_line = "★ Estrella ★ Recklessness can be costly."
-                earn(1)
-                st.session_state["last_result"] = ("FAILURE", estrella_line)
+                success = rapid_zenith_roll(trials=20, chance=0.05)
 
-            st.rerun()
+                if success:
+                    estrella_line = "★ Estrella ★ Bold move, you will be rewarded kindly."
+                    bank.award_once_per_round(b, note="rapid-success-20", amount=20)
+                    bank.award_once_per_round(b, note="rapid-completion-bonus", amount=3)
+                    st.session_state["last_result"] = ("SUCCESS", estrella_line)
+                else:
+                    estrella_line = "★ Estrella ★ Recklessness can be costly."
+                    bank.award_once_per_round(b, note="rapid-fail-completion", amount=1)
+                    st.session_state["last_result"] = ("FAILURE", estrella_line)
+
+                bank.save_bank(b, BANK_PATH)
+                st.rerun()
 
     # Show last result nicely
     if st.session_state["last_result"]:
