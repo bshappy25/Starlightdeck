@@ -4,21 +4,26 @@ import careon_bank_v2 as bank
 import careon_store
 import ui_header
 
-# Paths (must be BEFORE store call)
+# -------------------------
+# PAGE CONFIG FIRST
+# -------------------------
+st.set_page_config(page_title="Starlight Deck", layout="centered")
+
+# -------------------------
+# PATHS
+# -------------------------
 HERE = os.path.dirname(os.path.abspath(__file__))
 BANK_PATH = os.path.join(HERE, "careon_bank_v2.json")
 
-# load bank
+# -------------------------
+# ENSURE BANK FILE EXISTS
+# -------------------------
 b = bank.load_bank(BANK_PATH)
-bank.save_bank(b, BANK_PATH)  # ensures file exists
+bank.save_bank(b, BANK_PATH)
 
-# header
-ui_header.render_header(ticker_items=phrases)
-
-# store (NOW it can see BANK_PATH)
-careon_store.render_store(bank, BANK_PATH)
-
-# Optional Gemini
+# -------------------------
+# OPTIONAL GEMINI
+# -------------------------
 try:
     import google.generativeai as genai
     GENAI_AVAILABLE = True
