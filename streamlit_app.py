@@ -70,35 +70,51 @@ def deposit_into_bank(amount: int, note: str) -> None:
     # -----------------------------
 # Phrase input (<= 20 chars)
 # -----------------------------
-st.markdown("### Add a phrase")
-new_phrase = st.text_input("Max 20 characters", max_chars=20, key="phrase_add_input")
+# -----------------------------
+# Donate-to-submit phrase (100Ȼ)
+# -----------------------------
+st.session_state.setdefault("show_phrase_box", False)
 
-if st.button("Add Phrase", key="phrase_add_btn"):
-    p = " ".join((new_phrase or "").strip().split())[:20]
-    if not p:
-        st.error("Type a short phrase first.")
-    else:
-        b2 = bank.load_bank(BANK_PATH)
-        b2.setdefault("history", [])
-        b2["history"].append({
-            "type": "phrase",
-            "amount": 0,
-            "note": "user phrase",
-            "meta": {"msg": p}
-        })
-        bank.save_bank(b2, BANK_PATH)
-        st.success("Phrase added.")
+if st.button("🤝 Donate to the community (SLDNF)", key="btn_donate_open"):
+    st.session_state["show_phrase_box"] = True
+
+if st.session_state.get("show_phrase_box"):
+    st.markdown("### Community Phrase")
+    st.caption("Max 20 characters • Costs 100Ȼ • Your donation funds the SLD Network Fund (SLDNF).")
+
+    new_phrase = st.text_input("Your phrase", max_chars=20, key="phrase_add_input")
+
+    c1, c2 = st.columns(2)
+    submit = c1.button("Submit Phrase (-100Ȼ)", key="phrase_submit_100")
+    cancel = c2.button("Cancel", key="phrase_cancel")
+
+    if cancel:
+        st.session_state["show_phrase_box"] = False
         st.rerun()
-    bank.earn(b, user_amount, note=f"deposit: {note} (+{user_amount})")
-    b["sld_network_fund"] = int(b.get("sld_network_fund", 0)) + int(network_cut)
 
-    # log the fund movement as an info tx (optional but helpful)
-    b["history"].append({
-        "ts": __import__("datetime").datetime.utcnow().isoformat(timespec="seconds") + "Z",
-        "type": "fund",
-        "amount": int(network_cut),
-        "note": f"network_cut: {note} (+{network_cut})",
-    })
+    if submit:
+        p = " ".join((new_phrase or "").strip().split())[:20]
+        if not p:
+            st.error("Type a short phrase first.")
+        else:
+            b2 = bank.load_bank(BANK_PATH)
+
+            # Spend -> automatically adds 100Ȼ to SLD Network Fund via bank.spend()
+            if bank.spend(b2, 100, note="phrase donation (SLDNF)"):
+                b2.setdefault("history", [])
+                b2["history"].append({
+                    "type": "phrase",
+                    "amount": 0,
+                    "note": "user phrase",
+                    "meta": {"msg": p}
+                })
+                bank.save_bank(b2, BANK_PATH)
+
+                st.session_state["show_phrase_box"] = False
+                st.success("Phrase added. Thank you for donating.")
+                st.rerun()
+            else:
+                st.error("Not enough balance (need 100Ȼ).")
 
     bank.save_bank(b, BANK_PATH)
 
