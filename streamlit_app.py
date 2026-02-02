@@ -71,7 +71,7 @@ if st.session_state.get("admin_ok"):
             st.rerun()
         else:
             st.error("Unknown devtool code.")
-)
+
 
 # ---------- Helpers ----------
 def deposit_into_bank(amount: int, note: str) -> None:
