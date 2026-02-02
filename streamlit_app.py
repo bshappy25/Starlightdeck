@@ -63,6 +63,10 @@ careon_market.render_market(bank, BANK_PATH)
 # -------------------------
 st.divider()
 
+
+st.info("⚙️ Stabilizing build: content below temporarily paused.")
+st.stop()
+
 # -------------------------
 # OPTIONAL GEMINI (Estrella)
 # -------------------------
