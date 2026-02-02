@@ -5,6 +5,8 @@ import streamlit as st
 import careon_bank_v2 as bank
 import codes_ledger
 
+import careon_store
+
 import ui_header
 ui_header.render_header()
 
