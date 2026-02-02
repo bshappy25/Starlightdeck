@@ -1,4 +1,4 @@
-import os
+oh import os
 import random
 from datetime import datetime
 
@@ -188,8 +188,14 @@ for tx in reversed(b_for_ticker.get("history", []) or []):
 # -------------------------
 # TOP UI (render ONCE)
 # -------------------------
+
+# ========== HEADER ==========
 ui_header.render_header(ticker_items=phrases)
+
+# ========== CAREON BUBBLE ==========
 careon_bubble.render_bubble()
+
+# ========== MARKET (if open) ==========
 careon_market.render_market(bank, BANK_PATH)
 
 
