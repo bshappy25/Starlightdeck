@@ -286,6 +286,39 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+# ---------- Style ----------
+st.markdown(
+    r"""
+    <style>
+    :root {
+        --bg1: #120A2A;
+        --bg2: #1A0F3D;
+        --panel: rgba(255,255,255,0.06);
+        --panelBorder: rgba(255,255,255,0.10);
+        --gold2: #ffd27a;
+        --btn: #3f44c8;
+        --btnHover: #5a5ff0;
+    }
+
+    .stApp {
+        background: linear-gradient(180deg, var(--bg1), var(--bg2));
+        color: white;
+    }
+
+    .cardbox {
+        background: var(--panel);
+        border: 1px solid var(--panelBorder);
+        border-radius: 16px;
+        padding: 14px 16px;
+    }
+
+    /* more css... */
+
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 st.divider()
 
 
