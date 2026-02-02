@@ -62,7 +62,8 @@ st.session_state.setdefault("estrella_10_response", None)
 st.session_state.setdefault("estrella_20_response", None)
 st.session_state.setdefault("estrella_final_response", None)
 
-
+st.session_state.setdefault("username", "")
+st.session_state.setdefault("admin_ok", False)
 # -------------------------
 # GEMINI (Estrella) — Flash Demo
 # -------------------------
