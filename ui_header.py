@@ -3,187 +3,246 @@ import html
 
 def render_header(ticker_items=None):
     """
-    Top-of-page header for Starlight Deck:
-    - Subtitle
-    - Slow ticker (AVV buffers between phrases)
-    - Golden Careon bubble button (toggles store via st.session_state['show_store'])
+    Starlight Deck header with animated constellation and slow-drift ticker.
+    No Careon button - that's handled by the bubble module.
     """
-
-    st.session_state.setdefault("show_store", False)
-
-    # ---------- CSS (header-only) ----------
+    
     st.markdown(
         """
         <style>
-        /* Header tone */
-        .sld-top {
+        /* ========== HEADER CONSTELLATION ========== */
+        .sld-constellation {
+            position: relative;
             text-align: center;
-            margin-top: 0.6rem;
-            margin-bottom: 0.35rem;
+            padding: 1.8rem 0 1.2rem 0;
+            background: radial-gradient(
+                ellipse 800px 400px at 50% -20%,
+                rgba(180, 130, 255, 0.08),
+                transparent 70%
+            );
+            overflow: hidden;
         }
-
-        .sld-sub {
-            color: rgba(245,245,247,0.82);
-            font-size: 0.95rem;
-            line-height: 1.25rem;
-            margin-bottom: 0.55rem;
+        
+        /* Floating stars background */
+        .sld-constellation::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: 
+                radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,0.3), transparent),
+                radial-gradient(2px 2px at 60% 70%, rgba(180,130,255,0.4), transparent),
+                radial-gradient(1px 1px at 50% 50%, rgba(120,220,210,0.3), transparent),
+                radial-gradient(1px 1px at 80% 10%, rgba(246,193,119,0.4), transparent),
+                radial-gradient(2px 2px at 90% 60%, rgba(255,255,255,0.2), transparent);
+            background-size: 200% 200%;
+            animation: starsFloat 28s ease-in-out infinite;
+            pointer-events: none;
+            opacity: 0.6;
         }
-
-        /* Soft title */
+        
+        @keyframes starsFloat {
+            0%, 100% { transform: translate(0, 0); }
+            33% { transform: translate(-3%, 2%); }
+            66% { transform: translate(2%, -2%); }
+        }
+        
+        /* Main title */
         .sld-title {
-            font-size: 2.2rem;
-            font-weight: 900;
-            letter-spacing: 0.14em;
-            color: #ffd27a;
-            text-shadow:
-                0 2px 10px rgba(0,0,0,0.55),
-                0 0 28px rgba(246,193,119,0.35);
-            margin: 0.25rem 0 0.35rem 0;
-            user-select: none;
+            font-size: 2.6rem;
+            font-weight: 950;
+            letter-spacing: 0.18em;
+            background: linear-gradient(
+                135deg,
+                #ffd27a 0%,
+                #f6c177 25%,
+                #b482ff 50%,
+                #78dcd2 75%,
+                #ffd27a 100%
+            );
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 12s ease infinite;
+            filter: drop-shadow(0 4px 16px rgba(246,193,119,0.4));
+            margin: 0;
+            position: relative;
+            z-index: 2;
         }
-
-        /* Ticker container */
-        .ticker-wrap {
-            margin: 0.55rem auto 0.35rem auto;
-            padding: 10px 0;
-            border-radius: 16px;
-            background: rgba(255, 255, 255, 0.06);
+        
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        /* Subtitle */
+        .sld-subtitle {
+            color: rgba(245,245,247,0.85);
+            font-size: 0.98rem;
+            line-height: 1.4rem;
+            margin-top: 0.65rem;
+            font-weight: 400;
+            letter-spacing: 0.02em;
+        }
+        
+        /* Sparkle divider */
+        .sld-sparkles {
+            font-size: 1.1rem;
+            opacity: 0.7;
+            letter-spacing: 0.8em;
+            margin: 0.4rem 0 0.3rem 0;
+            animation: sparkleGlow 3s ease-in-out infinite;
+        }
+        
+        @keyframes sparkleGlow {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 0.9; }
+        }
+        
+        /* ========== TICKER STREAM ========== */
+        .ticker-shell {
+            margin: 0.8rem auto 0.5rem auto;
+            padding: 0;
+            border-radius: 18px;
+            background: linear-gradient(
+                135deg,
+                rgba(180, 130, 255, 0.08) 0%,
+                rgba(120, 220, 210, 0.06) 100%
+            );
             border: 1px solid rgba(255, 255, 255, 0.12);
             overflow: hidden;
             position: relative;
-            max-width: 900px;
-            backdrop-filter: blur(8px);
-            box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+            max-width: 920px;
+            backdrop-filter: blur(12px);
+            box-shadow: 
+                0 8px 32px rgba(0,0,0,0.15),
+                inset 0 1px 0 rgba(255,255,255,0.08);
         }
-
+        
+        /* Subtle edge glow */
+        .ticker-shell::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(246,193,119,0.4) 50%,
+                transparent
+            );
+        }
+        
         .ticker-track {
             display: inline-block;
             white-space: nowrap;
             will-change: transform;
-            animation: tickerScroll 88s linear infinite; /* slower + calmer */
+            animation: tickerDrift 90s linear infinite;
+            padding: 12px 0;
             padding-left: 100%;
         }
-
-        @keyframes tickerScroll {
-            0%   { transform: translateX(0); }
-            100% { transform: translateX(-100%); }
+        
+        @keyframes tickerDrift {
+            from { transform: translateX(0); }
+            to { transform: translateX(-100%); }
         }
-
-        .ticker-item {
+        
+        .ticker-content {
             display: inline-flex;
             align-items: center;
-            gap: 14px;
+            gap: 16px;
             font-weight: 900;
             letter-spacing: 0.12em;
             text-transform: uppercase;
-            font-size: 0.93rem;
+            font-size: 0.92rem;
+        }
+        
+        .ticker-dot {
+            opacity: 0.45;
+            margin: 0 18px;
+            color: rgba(255,255,255,0.5);
+        }
+        
+        /* Vibe colors with soft glow */
+        .vibe-acuity {
+            color: #59a6ff;
+            text-shadow: 0 0 16px rgba(89,166,255,0.35);
+        }
+        
+        .vibe-valor {
+            color: #ff5b5b;
+            text-shadow: 0 0 16px rgba(255,91,91,0.30);
+        }
+        
+        .vibe-variety {
+            color: #ffe27a;
+            text-shadow: 0 0 16px rgba(255,226,122,0.30);
+        }
+        
+        .phrase-text {
             color: rgba(245,245,247,0.92);
-        }
-
-        .dot { opacity: 0.55; margin: 0 16px; }
-
-        .acuity  { color: #59a6ff; text-shadow: 0 0 10px rgba(89,166,255,0.25); }
-        .valor   { color: #ff5b5b; text-shadow: 0 0 10px rgba(255,91,91,0.20); }
-        .variety { color: #ffe27a; text-shadow: 0 0 10px rgba(255,226,122,0.20); }
-
-        /* Careon bubble button styling */
-        .careon-btn-wrap .stButton > button {
-            width: auto !important;
-            padding: 0.48em 1.05em !important;
-            border-radius: 999px !important;
-            background: rgba(246,193,119,0.14) !important;
-            color: #ffd27a !important;
-            font-weight: 950 !important;
-            letter-spacing: 0.09em !important;
-            border: 1px solid rgba(246,193,119,0.42) !important;
-            text-shadow: 0 0 12px rgba(246,193,119,0.35) !important;
-            box-shadow:
-                0 0 14px rgba(246,193,119,0.55),
-                0 0 36px rgba(246,193,119,0.22) !important;
-            background-color: rgba(246,193,119,0.14) !important;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-        }
-
-        .careon-btn-wrap .stButton > button:hover {
-            transform: translateY(-1px) scale(1.03);
-            box-shadow:
-                0 0 18px rgba(246,193,119,0.78),
-                0 0 52px rgba(246,193,119,0.32) !important;
-        }
-
-        .careon-btn-wrap .stButton {
-            display: flex;
-            justify-content: center;
-        }
-
-        /* Tiny sparkle under header */
-        .sld-spark {
-            font-size: 0.9rem;
-            opacity: 0.7;
-            letter-spacing: 0.25em;
-            margin-top: 0.1rem;
-            margin-bottom: 0.25rem;
-            user-select: none;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
         }
         </style>
         """,
         unsafe_allow_html=True
     )
-
-    # ---------- Title + subtitle ----------
+    
+    # ========== RENDER HEADER ==========
     st.markdown(
         """
-        <div class="sld-top">
+        <div class="sld-constellation">
             <div class="sld-title">✦ STARLIGHT DECK ✦</div>
-            <div class="sld-sub">
+            <div class="sld-subtitle">
                 A calm, reflective card experience<br/>
-                guided by intuition and gentle structure.
+                guided by intuition and gentle structure
             </div>
-            <div class="sld-spark">✦ ✧ ✦</div>
+            <div class="sld-sparkles">✧ ✦ ✧</div>
         </div>
         """,
         unsafe_allow_html=True
     )
-
-    # ---------- Build ticker stream (phrases separated by AVV buffers) ----------
-    avv = (
-        '<span class="acuity">ACUITY</span><span class="dot">&bull;</span>'
-        '<span class="valor">VALOR</span><span class="dot">&bull;</span>'
-        '<span class="variety">VARIETY</span>'
+    
+    # ========== BUILD TICKER STREAM ==========
+    avv_pattern = (
+        '<span class="vibe-acuity">ACUITY</span>'
+        '<span class="ticker-dot">•</span>'
+        '<span class="vibe-valor">VALOR</span>'
+        '<span class="ticker-dot">•</span>'
+        '<span class="vibe-variety">VARIETY</span>'
     )
-
-    cleaned = []
+    
+    phrases = []
     if ticker_items:
-        for s in ticker_items:
-            s = (s or "").strip()
-            if s:
-                # allow some length so "USER: phrase" shows, but keep it tidy
-                cleaned.append(html.escape(s[:42]))
-
-    if not cleaned:
-        # Stand-in phrase when none exist yet
-        msg = "DONATE TO ADD A PHRASE"
-        stream = f"{html.escape(msg)} <span class='dot'>&bull;</span> {avv} <span class='dot'>&bull;</span> {html.escape(msg)}"
+        for item in ticker_items:
+            clean = (item or "").strip()
+            if clean:
+                phrases.append(html.escape(clean[:48]))
+    
+    if not phrases:
+        default_msg = "DONATE TO THE SLDNF TO ADD YOUR PHRASE"
+        ticker_html = (
+            f'<span class="phrase-text">{html.escape(default_msg)}</span>'
+            f'<span class="ticker-dot">•</span>'
+            f'{avv_pattern}'
+            f'<span class="ticker-dot">•</span>'
+            f'<span class="phrase-text">{html.escape(default_msg)}</span>'
+        )
     else:
-        parts = []
-        for msg in cleaned:
-            parts.append(msg)
-            parts.append(avv)
-        stream = (" <span class='dot'>&bull;</span> ".join(parts)) * 2
-
+        segments = []
+        for phrase in phrases:
+            segments.append(f'<span class="phrase-text">{phrase}</span>')
+            segments.append(avv_pattern)
+        ticker_html = '<span class="ticker-dot">•</span>'.join(segments)
+        ticker_html = (ticker_html + '<span class="ticker-dot">•</span>' + ticker_html)
+    
     st.markdown(
         f"""
-        <div class="ticker-wrap">
-          <div class="ticker-track">
-            <span class="ticker-item">{stream}</span>
-          </div>
+        <div class="ticker-shell">
+            <div class="ticker-track">
+                <span class="ticker-content">{ticker_html}</span>
+            </div>
         </div>
         """,
         unsafe_allow_html=True
     )
-
-    # ---------- Careon bubble (the ONLY way to open the store) ----------
-    st.markdown("<div class='careon-btn-wrap'>", unsafe_allow_html=True)
-    if st.button("Careon Ȼ", key="careon_bubble_btn"):
-        st.session_state["show_store"] = not st.session_state.get("show_store", False)
-    st.markdown("</div>", unsafe_allow_html=True)
