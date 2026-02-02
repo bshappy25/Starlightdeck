@@ -211,8 +211,26 @@ name = st.text_input(
     key="username_input"
 ).strip()
 
-# persist username
+st.markdown("### Sign in")
+
+name = st.text_input(
+    "Username",
+    value=st.session_state.get("username", ""),
+    placeholder="Type a name (e.g., Bshappy)",
+    max_chars=16,
+    key="top_username_input"
+).strip()
+
 st.session_state["username"] = name
+
+if name and name.lower() in {"bshappy", "bshapp"}:
+    st.session_state["admin_ok"] = True
+    st.caption("Status: ✅ Admin")
+else:
+    st.session_state["admin_ok"] = False
+    st.caption("Status: Guest")
+
+st.divider()
 
 # auto-admin by username
 if name and name.lower() in {"bshappy", "bshapp"}:
