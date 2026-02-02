@@ -224,10 +224,7 @@ def deposit_into_bank(amount: int, note: str) -> None:
 def rapid_zenith_roll(trials: int = 20, chance: float = 0.05) -> bool:
     return any(random.random() < chance for _ in range(trials))
 
-if st.session_state.get("sfx_play_id", "").startswith("draw-"):
-    play_sfx(SFX_SHIMMER, st.session_state["sfx_play_id"])
-    # clear so it doesn't replay on subsequent reruns
-    st.session_state["sfx_play_id"] = None
+
 # -------------------------
 # BUILD TICKER PHRASES (from bank history)
 # -------------------------
