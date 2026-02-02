@@ -316,7 +316,19 @@ st.markdown(
 )
 
 st.markdown(
-    "<div class='careon-pill-wrap'><span class='careon-pill'>Careon Ȼ</span></div>",
+    "<div class='careon-pill-wrap'>st.markdown(
+    """
+    <div class='careon-pill-wrap'>
+        <a href="#"
+           class="careon-pill"
+           style="text-decoration:none;"
+           title="Purchase Careons (coming soon)">
+            Careon Ȼ
+        </a>
+    </div>
+    """,
+    unsafe_allow_html=True
+)></div>",
     unsafe_allow_html=True
 )
 
