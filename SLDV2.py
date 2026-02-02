@@ -46,8 +46,9 @@ API_KEY = os.getenv("STARLIGHT_API_KEY")  # or paste here
 MODEL_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent"
 
 # If the user's optional question contains this character, we force a Zenith draw.
-FORCE_ZENITH_SYMBOL = "â—‡"
-ZENITH_CHANCE_PERCENT = 5
+
+FORCE_ZENITH_SYMBOL = "◇"
+ESTRELLA = "✨ Estrella ✨"
 
 DRAW_10 = 10
 DRAW_20 = 20
