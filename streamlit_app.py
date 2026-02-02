@@ -713,6 +713,13 @@ if run:
             st.session_state["sfx_play_id"] = f"zenith-{st.session_state.get('sfx_counter', 0)}"
             st.session_state["sfx_counter"] = st.session_state.get("sfx_counter", 0) + 1
 
+            if st.session_state.get("rapid_last_result"): status, line = st.session_state["rapid_last_result"] (st.success
+            if status == "SUCCESS" else st.warning)(status)
+               st.markdown(f'<div class="cardbox"><div style="font-size:1.15rem;"><b>{line}</b></div></div>', unsafe_allow_html=True)
+            
+            if st.session_state.get("rapid_last_roll") is not None:
+        roll_text = "Zenith appeared ✅" if st.session_state["rapid_last_roll"] else "No Zenith ❌"
+        st.markdown(f"<div class='cardbox'><b>Roll:</b> {roll_text}</div>", unsafe_allow_html=True)
 
             if success:
                 line = "★ Estrella ★ Bold move, you will be rewarded kindly."
@@ -727,13 +734,6 @@ if run:
             bank.save_bank(b, BANK_PATH)
             st.rerun()
 
-if st.session_state.get("rapid_last_result"):
-    status, line = st.session_state["rapid_last_result"]
-    (st.success if status == "SUCCESS" else st.warning)(status)
-    st.markdown(f'<div class="cardbox"><div style="font-size:1.15rem;"><b>{line}</b></div></div>', unsafe_allow_html=True)
-if st.session_state.get("rapid_last_roll") is not None:
-        roll_text = "Zenith appeared ✅" if st.session_state["rapid_last_roll"] else "No Zenith ❌"
-        st.markdown(f"<div class='cardbox'><b>Roll:</b> {roll_text}</div>", unsafe_allow_html=True)
 
 st.divider()
 
