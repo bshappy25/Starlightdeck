@@ -250,6 +250,13 @@ progress_pct = 0
 if GOAL > 0:
     progress_pct = min(100, int((current_fund / GOAL) * 100))
 
+/* Make Streamlit audio player subtle */
+div[data-testid="stAudio"] audio {
+    height: 26px;
+    opacity: 0.75;
+    border-radius: 12px;
+}
+
 st.markdown(
     f"""
     <div class="cardbox" style="text-align:center;">
@@ -286,7 +293,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ---------- Style ----------
 st.markdown(
     r"""
     <style>
