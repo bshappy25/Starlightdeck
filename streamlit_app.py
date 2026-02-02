@@ -55,9 +55,8 @@ for tx in reversed(b_for_ticker.get("history", []) or []):
 # -------------------------
 # HEADER + STORE
 # -------------------------
-ui_header.render_header(ticker_items=phrases)
-careon_store.render_store(bank, BANK_PATH)
-
+careon_bubble.render_bubble()
+careon_market.render_market(bank, BANK_PATH)
 # -------------------------
 # CONFIG / PATHS
 # -------------------------
