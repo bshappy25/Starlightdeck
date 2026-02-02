@@ -235,6 +235,54 @@ with st.sidebar:
 st.markdown(
     r"""
     <style>
+    
+    /* ---------- Moving Banner (Acuity / Valor / Variety) ---------- */
+.ticker-wrap {
+    margin: 0.9em auto 0.4em auto;
+    padding: 10px 0;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    overflow: hidden;
+    position: relative;
+    max-width: 860px;
+    backdrop-filter: blur(6px);
+}
+
+.ticker {
+    display: inline-block;
+    white-space: nowrap;
+    will-change: transform;
+    animation: tickerScroll 22s linear infinite;
+}
+
+.ticker:hover {
+    animation-play-state: paused; /* optional: pause on hover */
+}
+
+@keyframes tickerScroll {
+    0%   { transform: translateX(0%); }
+    100% { transform: translateX(-50%); }
+}
+
+.ticker-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-size: 0.95rem;
+}
+
+.dot {
+    opacity: 0.55;
+    margin: 0 14px;
+}
+
+.acuity { color: #59a6ff; text-shadow: 0 0 14px rgba(89,166,255,0.22); }
+.valor  { color: #ff5b5b; text-shadow: 0 0 14px rgba(255,91,91,0.18); }
+.variety{ color: #ffe27a; text-shadow: 0 0 14px rgba(255,226,122,0.18); }
     :root {
         --bg1: #120A2A;   /* deep purple */
         --bg2: #1A0F3D;
