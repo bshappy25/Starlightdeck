@@ -76,16 +76,27 @@ if st.session_state.get("admin_ok"):
 # ---------- Helpers ----------
 def deposit_into_bank(amount: int, note: str) -> None:
     """
-    Deposit policy (simple + community aligned):
-    - Adds amount to user balance
-    - Adds amount to SLD network fund
-    - Adds history line
+    Deposit policy:
+    - 95% goes to user balance
+    - 5% goes to SLD Network Fund
     """
+    amount = int(amount)
+    if amount <= 0:
+        return
+
+    network_cut = amount // 20        # 5%
+    user_amount = amount - network_cut
+
     b = bank.load_bank(BANK_PATH)
-    b["balance"] = int(b.get("balance", 0)) + int(amount)
-    b["sld_network_fund"] = int(b.get("sld_network_fund", 0)) + int(amount)
+
+    b["balance"] = int(b.get("balance", 0)) + user_amount
+    b["sld_network_fund"] = int(b.get("sld_network_fund", 0)) + network_cut
+
     b.setdefault("history", [])
-    b["history"].append(note)
+    b["history"].append(
+        f"Deposit redeemed: +{user_amount} Ȼ (network +{network_cut} Ȼ)"
+    )
+
     bank.save_bank(b, BANK_PATH)
 
 
