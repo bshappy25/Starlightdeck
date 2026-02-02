@@ -709,8 +709,8 @@ with c2:
 mode = st.session_state.get("mode")
 
 # ---- Bridge: consistent banner + safe reset (does NOT touch wallet) ----
-#if mode:
-    st.markdown(
+if mode:
+st.markdown(
         f"""
         <div class="cardbox" style="text-align:center;">
             <div style="font-weight:900; letter-spacing:0.10em; font-size:1.05rem;">
