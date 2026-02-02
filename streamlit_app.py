@@ -37,11 +37,13 @@ try:
 except ImportError:
     GENAI_AVAILABLE = False
 
-# -------------------------
-# BUILD TICKER PHRASES (before header)
+
+# # -------------------------
+# BUILD TICKER PHRASES
 # -------------------------
 b_for_ticker = bank.load_bank(BANK_PATH)
 phrases = []
+
 for tx in reversed(b_for_ticker.get("history", []) or []):
     if isinstance(tx, dict) and tx.get("type") == "phrase":
         meta = tx.get("meta") or {}
@@ -54,8 +56,9 @@ for tx in reversed(b_for_ticker.get("history", []) or []):
         break
 
 # -------------------------
-# HEADER + STORE
+# HEADER + CAREON MARKET ENTRY
 # -------------------------
+ui_header.render_header(ticker_items=phrases)
 careon_bubble.render_bubble()
 careon_market.render_market(bank, BANK_PATH)
 # -------------------------
