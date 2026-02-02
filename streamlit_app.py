@@ -99,20 +99,160 @@ with col2:
 mode = st.session_state.get("mode")
 
 if mode == "normal":
-    st.subheader("🃏 Normal Mode")
+    st.subheader("🃏 Normal Mode (Authentic Web Port)")
 
-    # Import here so Streamlit doesn't crash if file is missing during early UI work
-    try:
-        from SLD_Cleanv2 import draw_card, zenith_check, get_vibe_fields, new_stats
-        # Optional: if you added it
-        try:
-            from SLD_Cleanv2 import display_card_web
-        except Exception:
-            display_card_web = None
-    except Exception as e:
-        st.error("SLD_Cleanv2.py is not wired yet (import failed).")
-        st.code(str(e))
+    from sld_engine import (
+        FORCE_ZENITH_SYMBOL,
+        DRAW_10,
+        DRAW_20,
+        new_stats,
+        normal_draw_step,
+        render_card_text,
+        estrella_prompt_10,
+        estrella_prompt_20,
+        estrella_final_template,
+    )
+
+    # --- session state for the full normal run ---
+    st.session_state.setdefault("normal_paid", False)
+    st.session_state.setdefault("normal_stats", new_stats())
+    st.session_state.setdefault("normal_draws", [])
+    st.session_state.setdefault("normal_phase", "ready")  # ready -> reveal -> estrella10 -> estrella20 -> final
+    st.session_state.setdefault("normal_last_card_text", None)
+    st.session_state.setdefault("normal_last_idx", 0)
+    st.session_state.setdefault("normal_message", None)
+
+    # Load bank for cost/payouts
+    b = bank.load_bank(BANK_PATH)
+
+    # Charge to start the round (matches your CLI: -1 to start)
+    if not st.session_state["normal_paid"]:
+        st.info("Starting a Normal round costs **1 Ȼ**.")
+        if st.button("Start Round (-1 Ȼ)"):
+            b = bank.load_bank(BANK_PATH)
+            if b.get("balance", 0) < 1:
+                st.error("Not enough Careons to start a round.")
+            else:
+                if bank.spend(b, 1, note="normal round start"):
+                    bank.save_bank(b, BANK_PATH)
+                    st.session_state["normal_paid"] = True
+                    st.session_state["normal_message"] = "Round started (-1 Ȼ)."
+                    st.rerun()
         st.stop()
+
+    # Header + status
+    stats = st.session_state["normal_stats"]
+    st.write(f"Draws: **{stats['draws']} / 20**")
+    if st.session_state["normal_message"]:
+        st.markdown(
+            f"<div class='cardbox'><b>{st.session_state['normal_message']}</b></div>",
+            unsafe_allow_html=True
+        )
+
+    # Reset round (doesn't touch bank)
+    if st.button("Reset Round"):
+        st.session_state["normal_stats"] = new_stats()
+        st.session_state["normal_draws"] = []
+        st.session_state["normal_phase"] = "ready"
+        st.session_state["normal_last_card_text"] = None
+        st.session_state["normal_last_idx"] = 0
+        st.session_state["normal_message"] = "Round reset."
+        st.rerun()
+
+    st.divider()
+
+    # --- MAIN LOOP IN WEB FORM ---
+
+    # 1) Draw gate (authentic “pause before pull”)
+    if st.session_state["normal_phase"] == "ready":
+        st.caption("Draw gate: in CLI you enter three spaces. Here, you press the draw button deliberately.")
+        if st.button("Draw (Gate)"):
+            st.session_state["normal_phase"] = "reveal"
+            st.session_state["normal_message"] = None
+            st.rerun()
+
+    # 2) Reveal step: ask optional question, then draw
+    if st.session_state["normal_phase"] == "reveal":
+        st.write(f"Optional question (include **{FORCE_ZENITH_SYMBOL}** to force Zenith):")
+
+        q = st.text_input("Ask (optional)", key=f"q_{stats['draws']}")
+        if st.button("Confirm Draw"):
+            draw_record = normal_draw_step(stats, q)
+
+            st.session_state["normal_draws"].append(draw_record)
+
+            idx = stats["draws"]  # now incremented
+            card_text = render_card_text(
+                i=idx,
+                vibe=draw_record["vibe"],
+                level=draw_record["level"],
+                zenith=draw_record["zenith"],
+                fields=draw_record["fields"],
+                stats=stats,
+            )
+
+            st.session_state["normal_last_card_text"] = card_text
+            st.session_state["normal_last_idx"] = idx
+
+            # checkpoint routing
+            if idx == DRAW_10:
+                # Estrella moment + bank devtool is allowed here later
+                st.session_state["normal_phase"] = "estrella10"
+            elif idx == DRAW_20:
+                st.session_state["normal_phase"] = "estrella20"
+            else:
+                st.session_state["normal_phase"] = "ready"
+
+            st.session_state["normal_stats"] = stats
+            st.rerun()
+
+    # Show most recent card (keeps the “short headed per card” vibe)
+    if st.session_state["normal_last_card_text"]:
+        st.markdown("<div class='cardbox'><b>Latest Card</b></div>", unsafe_allow_html=True)
+        st.markdown(
+            f"<div class='cardbox'><pre>{st.session_state['normal_last_card_text']}</pre></div>",
+            unsafe_allow_html=True
+        )
+
+    # 3) Estrella at 10 (authentic placement)
+    if st.session_state["normal_phase"] == "estrella10":
+        st.markdown("<div class='cardbox'><b>✨ Estrella ✨ (10)</b></div>", unsafe_allow_html=True)
+        st.text(estrella_prompt_10(stats))
+
+        # Completion token example: +1 on this milestone (optional)
+        if st.button("Continue"):
+            b = bank.load_bank(BANK_PATH)
+            bank.award_once_per_round(b, note="estrella-10", amount=1)
+            bank.save_bank(b, BANK_PATH)
+            st.session_state["normal_message"] = "★ Estrella ★ 10-card check-in (+1 Ȼ)."
+            st.session_state["normal_phase"] = "ready"
+            st.rerun()
+
+    # 4) Estrella at 20 + final question (authentic placement)
+    if st.session_state["normal_phase"] == "estrella20":
+        st.markdown("<div class='cardbox'><b>✨ Estrella ✨ (20)</b></div>", unsafe_allow_html=True)
+        st.text(estrella_prompt_20(stats))
+
+        final_q = st.text_input("Final question for Estrella", key="final_q")
+        st.caption("Final response is currently a template (AI wiring comes next).")
+
+        if st.button("Finish (Final)"):
+            # Milestone + completion bonus (your “3 tasks complete” payoff)
+            b = bank.load_bank(BANK_PATH)
+            bank.award_once_per_round(b, note="estrella-20", amount=1)
+            bank.award_once_per_round(b, note="estrella-final", amount=1)
+            bank.award_once_per_round(b, note="completion-bonus", amount=3)
+            bank.save_bank(b, BANK_PATH)
+
+            st.markdown("<div class='cardbox'><b>✨ Estrella ✨ Final</b></div>", unsafe_allow_html=True)
+            st.text(estrella_final_template(stats, final_q))
+
+            st.session_state["normal_message"] = "🎉 COMPLETION BONUS: +3 Ȼ added."
+            st.session_state["normal_phase"] = "done"
+            st.rerun()
+
+    if st.session_state["normal_phase"] == "done":
+        st.success("Session complete. You can reset or start a new round.")
 
     # ----- Init session state for the round -----
     st.session_state.setdefault("normal_draws", [])
