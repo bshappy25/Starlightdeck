@@ -678,6 +678,56 @@ if st.session_state.get("classic_active"):
 
 st.divider()
 
+# ---------- Mode Bridge (between Classic and Rapid) ----------
+# Ensures state doesn't bleed between modes and gives consistent UI rhythm.
+
+st.session_state.setdefault("mode", None)
+st.session_state.setdefault("mode_msg", None)
+
+mode = st.session_state.get("mode")
+
+# One place to show mode + a soft system message
+if mode:
+    st.markdown(
+        f"""
+        <div class="cardbox" style="text-align:center;">
+            <div style="font-weight:900; letter-spacing:0.08em; font-size:1.05rem;">
+                MODE: {mode.upper()}
+            </div>
+            <div class="muted" style="margin-top:0.35em;">
+                Choose your path. Normal is deliberate. Rapid is a gamble.
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+# Reset only the *mode-specific* state (does NOT touch bank)
+if mode:
+    if st.button("Reset Mode State (doesn't change wallet)"):
+        # Normal state
+        for k in [
+            "normal_paid", "normal_stats", "normal_draws", "normal_phase",
+            "normal_last_card_text", "normal_last_idx", "normal_message", "normal_done"
+        ]:
+            if k in st.session_state:
+                del st.session_state[k]
+
+        # Rapid state
+        for k in ["rapid_last_result"]:
+            if k in st.session_state:
+                del st.session_state[k]
+
+        st.session_state["mode_msg"] = "Mode state reset."
+        st.rerun()
+
+# Optional: show mode message once
+if st.session_state.get("mode_msg"):
+    st.info(st.session_state["mode_msg"])
+    st.session_state["mode_msg"] = None
+
+st.divider()
+
 
 if mode == "rapid":
     st.subheader("⚡ Rapid Mode")
