@@ -18,20 +18,6 @@ st.set_page_config(page_title="Starlight Deck", layout="centered")
 # ---------- UI Header ----------
 st.markdown(
     """
-    <div style="
-        text-align:center;
-        font-size: 2.5rem;
-        font-weight: 900;
-        letter-spacing: 0.14em;
-        color: #ffd27a;
-        text-shadow:
-            0 2px 10px rgba(0,0,0,0.65),
-            0 0 26px rgba(246,193,119,0.55),
-            0 0 60px rgba(246,193,119,0.22);
-        margin-top: 0.35em;
-        margin-bottom: 0.15em;
-    ">
-        ✦ STARLIGHT DECK ✦
     </div>
     """,
     unsafe_allow_html=True
