@@ -689,17 +689,17 @@ st.session_state.setdefault("rapid_last_result", None)  # (status, estrella_line
 # ---- Mode chooser (keep simple + stable) ----
 st.markdown("<div class='cardbox' style='text-align:center;'><b>Choose a mode</b></div>", unsafe_allow_html=True)
 
-#c1, c2 = st.columns(2)
+c1, c2 = st.columns(2)
 #with c1:
-   # if st.button("Start Normal"):
+    if st.button("Start Normal"):
         st.session_state["mode"] = "normal"
         st.session_state["mode_msg"] = "Normal mode selected."
         # wipe rapid-only state when switching
         st.session_state["rapid_last_result"] = None
         st.rerun()
 
-#with c2:
-    #if st.button("Start Rapid"):
+with c2:
+    if st.button("Start Rapid"):
         st.session_state["mode"] = "rapid"
         st.session_state["mode_msg"] = "Rapid mode selected."
         # wipe rapid-only state (fresh start each switch)
