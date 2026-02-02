@@ -709,14 +709,44 @@ if run:
             success = rapid_zenith_roll(trials=20, chance=0.05)
             st.session_state["rapid_last_roll"] = success
 
-            if zenith:
-            st.session_state["sfx_play_id"] = f"zenith-{st.session_state.get('sfx_counter', 0)}"
-            st.session_state["sfx_counter"] = st.session_state.get("sfx_counter", 0) + 1
+            zenith, forced_flag = zenith_check(forced)
 
-            if st.session_state.get("rapid_last_result"): status, line = st.session_state["rapid_last_result"] (st.success
-            if status == "SUCCESS" else st.warning)(status)
-               st.markdown(f'<div class="cardbox"><div style="font-size:1.15rem;"><b>{line}</b></div></div>', unsafe_allow_html=True)
-            
+if zenith:
+    # --- stats ---
+    stats["zenith"] += 1
+    if forced_flag:
+        stats["zenith_forced"] += 1
+
+    # --- shimmer SFX trigger ---
+    st.session_state["sfx_play_id"] = f"zenith-{st.session_state.get('sfx_counter', 0)}"
+    st.session_state["sfx_counter"] = st.session_state.get("sfx_counter", 0) + 1
+
+    # --- visual flag (used by renderer) ---
+    st.session_state["zenith_flash"] = True
+else:
+    st.session_state["zenith_flash"] = False
+if st.session_state.get("zenith_flash"):
+    st.markdown(
+        """
+        <div style="
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 14px;
+            text-align: center;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            color: #ffd27a;
+            background: rgba(255, 210, 122, 0.10);
+            box-shadow:
+                0 0 18px rgba(255, 210, 122, 0.75),
+                0 0 42px rgba(255, 210, 122, 0.35);
+        ">
+            ✦ Z E N I T H ✦
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
             if st.session_state.get("rapid_last_roll") is not None:
         roll_text = "Zenith appeared ✅" if st.session_state["rapid_last_roll"] else "No Zenith ❌"
         st.markdown(f"<div class='cardbox'><b>Roll:</b> {roll_text}</div>", unsafe_allow_html=True)
