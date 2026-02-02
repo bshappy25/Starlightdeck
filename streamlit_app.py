@@ -246,6 +246,39 @@ st.markdown(
 
 st.divider()
 
+# -----------------------------
+# Admin gate (username -> password)
+# -----------------------------
+st.session_state.setdefault("admin_ok", False)
+
+st.markdown("### Admin Access")
+
+username = st.text_input("Username", placeholder="Enter username", key="admin_username")
+
+# Only show password box if username matches
+if (username or "").strip().lower() == "bshapp":
+    admin_pw = st.text_input("Admin password", type="password", key="admin_pw_input")
+
+    if st.button("Unlock Admin", key="admin_unlock_btn"):
+        secret_pw = None
+        try:
+            secret_pw = st.secrets.get("ADMIN_PASSWORD")
+        except Exception:
+            secret_pw = None
+        if not secret_pw:
+            secret_pw = os.getenv("SLD_ADMIN_PASSWORD")
+
+        if secret_pw and admin_pw == secret_pw:
+            st.session_state["admin_ok"] = True
+            st.success("Admin unlocked.")
+            st.rerun()
+        else:
+            st.session_state["admin_ok"] = False
+            st.error("Wrong password.")
+else:
+    # If they change away from bshapp, lock admin
+    st.session_state["admin_ok"] = False
+
 # -------------------------
 # DEPOSIT CODES
 # -------------------------
