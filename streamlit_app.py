@@ -395,6 +395,12 @@ st.markdown(
 )
 
 st.divider()
+
+ui_header.render_header(ticker_items=phrases)
+careon_bubble.render_bubble()
+careon_market.render_market(bank, BANK_PATH)
+st.divider()
+
 # -----------------------------
 # Admin gate (username -> password)
 # -----------------------------
