@@ -99,7 +99,143 @@ with col2:
 mode = st.session_state.get("mode")
 
 if mode == "normal":
-    st.info("Normal Mode web port is next. Rapid Mode is live now for testing.")
+    st.subheader("🃏 Normal Mode")
+
+    # Import here so Streamlit doesn't crash if file is missing during early UI work
+    try:
+        from SLD_Cleanv2 import draw_card, zenith_check, get_vibe_fields, new_stats
+        # Optional: if you added it
+        try:
+            from SLD_Cleanv2 import display_card_web
+        except Exception:
+            display_card_web = None
+    except Exception as e:
+        st.error("SLD_Cleanv2.py is not wired yet (import failed).")
+        st.code(str(e))
+        st.stop()
+
+    # ----- Init session state for the round -----
+    st.session_state.setdefault("normal_draws", [])
+    st.session_state.setdefault("normal_stats", new_stats())
+    st.session_state.setdefault("normal_paid", False)
+    st.session_state.setdefault("normal_message", None)
+    st.session_state.setdefault("normal_done", False)
+
+    # Load bank
+    b = bank.load_bank(BANK_PATH)
+
+    # Charge once per round
+    if not st.session_state["normal_paid"]:
+        if b.get("balance", 0) < 1:
+            st.error("Not enough Careons to start a Normal round (-1 Ȼ).")
+        else:
+            if bank.spend(b, 1, note="normal round start"):
+                bank.save_bank(b, BANK_PATH)
+                st.session_state["normal_paid"] = True
+                st.session_state["normal_message"] = "Round started (-1 Ȼ)."
+                st.rerun()
+            else:
+                st.error("Not enough Careons to start a Normal round (-1 Ȼ).")
+
+    # Controls
+    c1, c2, c3 = st.columns(3)
+    draw_pressed = c1.button("Draw Next Card")
+    finish_pressed = c2.button("Finish (Final)")
+    reset_pressed = c3.button("Reset Round")
+
+    if reset_pressed:
+        st.session_state["normal_draws"] = []
+        st.session_state["normal_stats"] = new_stats()
+        st.session_state["normal_paid"] = False
+        st.session_state["normal_message"] = "Round reset."
+        st.session_state["normal_done"] = False
+        st.rerun()
+
+    stats = st.session_state["normal_stats"]
+
+    # Draw action
+    if draw_pressed and not st.session_state["normal_done"]:
+        if stats["draws"] >= 20:
+            st.session_state["normal_done"] = True
+            st.session_state["normal_message"] = "20 cards reached. Press Finish (Final)."
+            st.rerun()
+
+        vibe, level = draw_card()
+        stats["draws"] += 1
+        stats["vibe"][vibe] += 1
+        stats["level"][level] += 1
+
+        # For Streamlit, we aren't doing the "ask optional question" gate yet.
+        # Forced zenith can be added later via a checkbox.
+        zenith, _forced_flag = zenith_check(False)
+
+        if zenith:
+            stats["zenith"] += 1
+
+        fields = get_vibe_fields(vibe, level, zenith)
+
+        st.session_state["normal_draws"].append({
+            "vibe": vibe,
+            "level": level,
+            "zenith": zenith,
+            "fields": fields,
+        })
+
+        # Estrella checkpoints: award +1 at 10 and +1 at 20 (once-per-round)
+        if stats["draws"] == 10:
+            b = bank.load_bank(BANK_PATH)
+            bank.award_once_per_round(b, note="estrella-10", amount=1)
+            bank.save_bank(b, BANK_PATH)
+            st.session_state["normal_message"] = "★ Estrella ★ 10-card insight (+1 Ȼ)."
+        elif stats["draws"] == 20:
+            b = bank.load_bank(BANK_PATH)
+            bank.award_once_per_round(b, note="estrella-20", amount=1)
+            bank.save_bank(b, BANK_PATH)
+            st.session_state["normal_done"] = True
+            st.session_state["normal_message"] = "★ Estrella ★ 20-card ratio insight (+1 Ȼ). Press Finish (Final)."
+        else:
+            st.session_state["normal_message"] = None
+
+        st.session_state["normal_stats"] = stats
+        st.rerun()
+
+    # Finish action (completion bonus)
+    if finish_pressed and st.session_state["normal_done"]:
+        b = bank.load_bank(BANK_PATH)
+        bank.award_once_per_round(b, note="estrella-final", amount=1)
+        bonus = bank.award_once_per_round(b, note="completion-bonus", amount=3)
+        bank.save_bank(b, BANK_PATH)
+
+        if bonus:
+            st.session_state["normal_message"] = "🎉 COMPLETION BONUS: +3 Ȼ (three tasks complete)."
+        else:
+            st.session_state["normal_message"] = "★ Estrella ★ Session complete."
+        st.rerun()
+
+    # Status
+    st.write(f"Draws: **{stats['draws']} / 20**")
+    if st.session_state["normal_message"]:
+        st.markdown(
+            f"<div class='cardbox'><b>{st.session_state['normal_message']}</b></div>",
+            unsafe_allow_html=True
+        )
+
+    # Render cards
+    if st.session_state["normal_draws"]:
+        for i, d in enumerate(st.session_state["normal_draws"], start=1):
+            if display_card_web:
+                txt = display_card_web(i, d["vibe"], d["level"], d["zenith"], d["fields"], stats)
+            else:
+                # fallback text if you haven't added display_card_web yet
+                z = "◇ ZENITH ◇" if d["zenith"] else ""
+                txt = (
+                    f"Card #{i}\n"
+                    f"{d['vibe'].upper()} | Level {d['level']} {z}\n"
+                    + "\n".join([f"{k}: {v}" for k, v in d["fields"].items()])
+                )
+            st.markdown(f"<div class='cardbox'><pre>{txt}</pre></div>", unsafe_allow_html=True)
+    else:
+        st.caption("Draw your first card to begin.")
 
 if mode == "rapid":
     st.subheader("⚡ Rapid Mode")
