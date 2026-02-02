@@ -1,13 +1,19 @@
 import os
 import streamlit as st
+
+# --- Core modules ---
 import careon_bank_v2 as bank
-import careon_store
 import ui_header
+import careon_bubble
+import careon_market
 
 # -------------------------
-# PAGE CONFIG FIRST
+# PAGE CONFIG (MUST BE FIRST STREAMLIT CALL)
 # -------------------------
-st.set_page_config(page_title="Starlight Deck", layout="centered")
+st.set_page_config(
+    page_title="Starlight Deck",
+    layout="centered"
+)
 
 # -------------------------
 # PATHS
