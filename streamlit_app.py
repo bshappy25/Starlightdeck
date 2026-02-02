@@ -160,6 +160,66 @@ init_state()
 # -------------------------
 # STYLE / HEADER
 # -------------------------
+st.markdown(
+    """
+    <style>
+    /* ===============================
+       ST★RLIGHT BACKGROUND UPGRADE
+       Purple → Aqua + subtle shimmer
+       =============================== */
+
+    .stApp {
+        background:
+            radial-gradient(
+                1200px 600px at 20% -10%,
+                rgba(160, 140, 255, 0.22),
+                transparent 60%
+            ),
+            radial-gradient(
+                900px 500px at 80% 10%,
+                rgba(120, 220, 210, 0.20),
+                transparent 55%
+            ),
+            linear-gradient(
+                180deg,
+                #160c3a 0%,
+                #221060 35%,
+                #1a3f6b 65%,
+                #0f4f5c 100%
+            );
+        color: #f5f5f7;
+    }
+
+    /* Soft star shimmer overlay */
+    .stApp::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background:
+            radial-gradient(circle at 30% 40%, rgba(255,255,255,0.05), transparent 40%),
+            radial-gradient(circle at 70% 60%, rgba(255,255,255,0.04), transparent 45%),
+            radial-gradient(circle at 50% 20%, rgba(255,255,255,0.03), transparent 50%);
+        animation: starlightDrift 48s linear infinite;
+        z-index: 0;
+    }
+
+    @keyframes starlightDrift {
+        0%   { transform: translateY(0px); }
+        50%  { transform: translateY(-12px); }
+        100% { transform: translateY(0px); }
+    }
+
+    /* Ensure content stays above shimmer */
+    .stApp > div {
+        position: relative;
+        z-index: 1;
+    }
+
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 st.markdown(
     """
