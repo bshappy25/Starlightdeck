@@ -17,7 +17,7 @@ st.markdown(
       <b>🌐 SLD Network Fund:</b> {b.get("sld_network_fund", 0)} Ȼ
     </div>
     """,
-    unsafe_allow_html=True,
+    unsafe_allow_html=True
 )
 
 # ---------- Style ----------
