@@ -10,7 +10,9 @@ import careon_bubble
 import careon_market
 import codes_ledger
 
+import streamlit as st
 
+st.audio("assets/ambient.mp3", loop=True)
 # -------------------------
 # PAGE CONFIG (must be first Streamlit call)
 # -------------------------
