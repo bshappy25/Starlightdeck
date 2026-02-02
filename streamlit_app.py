@@ -279,6 +279,29 @@ else:
     # If they change away from bshapp, lock admin
     st.session_state["admin_ok"] = False
 
+# -----------------------------
+# Admin Devtool (TGIF)
+# -----------------------------
+if st.session_state.get("admin_ok"):
+    st.markdown("#### Devtool (Admin)")
+    dev_code = st.text_input("Devtool code", placeholder="TGIF", key="admin_devtool_input")
+
+    if st.button("Apply Devtool", key="admin_devtool_apply"):
+        if (dev_code or "").strip().upper() == "TGIF":
+            b2 = bank.load_bank(BANK_PATH)
+
+            # +5 to balance (dev/test)
+            bank.award_once_per_round(b2, note="devtool-tgif", amount=5)
+
+            # Optional: log a nice readable line as well
+            b2.setdefault("history", [])
+            b2["history"].append({"type": "admin", "amount": 5, "note": "TGIF applied", "meta": {"msg": "TGIF +5"}})
+
+            bank.save_bank(b2, BANK_PATH)
+            st.success("TGIF applied: +5 Ȼ")
+            st.rerun()
+        else:
+            st.error("Unknown devtool code.")
 # -------------------------
 # DEPOSIT CODES
 # -------------------------
