@@ -14,6 +14,73 @@ LEDGER_PATH = os.path.join(HERE, "codes_ledger.json")
 st.set_page_config(page_title="Starlight Deck", layout="centered")
 
 # ---------- Style ----------
+
+# ---------- UI Header ----------
+st.markdown(
+    """
+    <div style="
+        text-align:center;
+        font-size: 2.5rem;
+        font-weight: 900;
+        letter-spacing: 0.14em;
+        color: #ffd27a;
+        text-shadow:
+            0 2px 10px rgba(0,0,0,0.65),
+            0 0 26px rgba(246,193,119,0.55),
+            0 0 60px rgba(246,193,119,0.22);
+        margin-top: 0.35em;
+        margin-bottom: 0.15em;
+    ">
+        ✦ STARLIGHT DECK ✦
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+st.markdown(
+    "<div class='muted' style='text-align:center; margin-bottom: 0.45em;'>"
+    "A calm, reflective card experience<br/>guided by intuition and gentle structure."
+    "</div>",
+    unsafe_allow_html=True
+)
+
+# Ticker (no unicode bullets; uses &bull;)
+st.markdown(
+    """
+    <div class="ticker-wrap">
+      <div class="ticker-track">
+        <span class="ticker-item">
+          <span class="acuity">ACUITY</span><span class="dot">&bull;</span>
+          <span class="valor">VALOR</span><span class="dot">&bull;</span>
+          <span class="variety">VARIETY</span><span class="dot">&bull;</span>
+          <span class="acuity">ACUITY</span><span class="dot">&bull;</span>
+          <span class="valor">VALOR</span><span class="dot">&bull;</span>
+          <span class="variety">VARIETY</span><span class="dot">&bull;</span>
+          <span class="acuity">ACUITY</span><span class="dot">&bull;</span>
+          <span class="valor">VALOR</span><span class="dot">&bull;</span>
+          <span class="variety">VARIETY</span><span class="dot">&bull;</span>
+        </span>
+      </div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+# Clickable Careon pill (purchase placeholder)
+st.markdown(
+    """
+    <div class='careon-pill-wrap'>
+        <a href="#"
+           class="careon-pill"
+           style="text-decoration:none;"
+           title="Purchase Careons (coming soon)">
+            Careon Ȼ
+        </a>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
 st.markdown("### Deposit Codes")
 
 redeem_code = st.text_input("Redeem code", placeholder="DEP-50-XXXXXX", key="redeem_code_input")
