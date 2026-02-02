@@ -597,7 +597,7 @@ if st.session_state.get("classic_active"):
                     
                     if GEMINI_API_KEY:
                         try:
-                            model = genai.GenerativeModel('gemini-pro')
+                            model = genai.GenerativeModel('gemini-3-flash-preview')
                             prompt = f"Two short paragraphs reflecting on 10 card draws.\nVibes: {st.session_state['classic_vibe_counts']}\nZenith: {st.session_state['classic_zenith_count']}"
                             response = model.generate_content(prompt)
                             st.session_state["estrella_10_response"] = response.text
@@ -627,7 +627,7 @@ if st.session_state.get("classic_active"):
             
             if GEMINI_API_KEY:
                 try:
-                    model = genai.GenerativeModel('gemini-1.5-flash')
+                    model = genai.GenerativeModel('gemini-3-flash-preview')
 
                     prompt = f"Two short paragraphs analyzing the journey.\nVibes: {st.session_state['classic_vibe_counts']}\nLevels: {st.session_state['classic_level_counts']}\nZenith: {st.session_state['classic_zenith_count']}"
                     response = model.generate_content(prompt)
@@ -653,7 +653,7 @@ if st.session_state.get("classic_active"):
         if st.button("Submit Question", key="classic_submit_q"):
             if final_q and GEMINI_API_KEY:
                 try:
-                    model = genai.GenerativeModel('gemini-1.5-flash')
+                    model = genai.GenerativeModel('gemini-3-flash-preview')
 
                     prompt = f"Return exactly five lines:\nIntention:\nForward action:\nPast reflection:\nEnergy level:\nAspirational message:\n\nStats: {st.session_state['classic_vibe_counts']}\nQuestion: {final_q}"
                     response = model.generate_content(prompt)
