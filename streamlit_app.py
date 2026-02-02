@@ -1,12 +1,14 @@
 import google.generativeai as genai
 
 # API setup (use Streamlit secrets for security)
+GEMINI_API_KEY = None
 try:
     GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
     if GEMINI_API_KEY:
         genai.configure(api_key=GEMINI_API_KEY)
 except Exception as e:
     st.sidebar.error(f"API key error: {e}")
+
 
 
 
