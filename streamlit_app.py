@@ -50,6 +50,38 @@ st.markdown(
 )
 
 # ---------- Helpers ----------
+def deposit_into_bank(amount: int, note: str) -> None:
+    """
+    Deposit policy (simple + community aligned):
+    - Adds amount to user balance
+    - Adds amount to SLD network fund
+    - Adds history line
+    """
+    b = bank.load_bank(BANK_PATH)
+    b["balance"] = int(b.get("balance", 0)) + int(amount)
+    b["sld_network_fund"] = int(b.get("sld_network_fund", 0)) + int(amount)
+    b.setdefault("history", [])
+    b["history"].append(note)
+    bank.save_bank(b, BANK_PATH)
+
+
+def is_admin() -> bool:
+    """
+    Admin gate:
+    - Uses Streamlit secrets if present: st.secrets["ADMIN_PASSWORD"]
+    - Else uses env var: SLD_ADMIN_PASSWORD
+    """
+    pw = None
+    try:
+        pw = st.secrets.get("ADMIN_PASSWORD")
+    except Exception:
+        pw = None
+    if not pw:
+        pw = os.getenv("SLD_ADMIN_PASSWORD")
+    if not pw:
+        return False
+    return st.session_state.get("admin_ok", False)
+
 def rapid_zenith_roll(trials: int = 20, chance: float = 0.05) -> bool:
     return any(random.random() < chance for _ in range(trials))
 
