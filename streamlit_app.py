@@ -1,14 +1,21 @@
 import os
-import random
 import streamlit as st
-
 import careon_bank_v2 as bank
-import codes_ledger
-
 import careon_store
-
 import ui_header
-ui_header.render_header()
+
+# Paths (must be BEFORE store call)
+HERE = os.path.dirname(os.path.abspath(__file__))
+BANK_PATH = os.path.join(HERE, "careon_bank_v2.json")
+
+# load bank
+b = bank.load_bank(BANK_PATH)
+bank.save_bank(b, BANK_PATH)  # ensures file exists
+
+# header
+ui_header.render_header(ticker_items=phrases)
+
+# store (NOW it can see BANK_PATH)
 careon_store.render_store(bank, BANK_PATH)
 
 # Optional Gemini
