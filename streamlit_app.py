@@ -198,12 +198,31 @@ careon_bubble.render_bubble()
 # ========== MARKET (if open) ==========
 careon_market.render_market(bank, BANK_PATH)
 
-# Auto-admin if username matches
-if name.lower() in {"bshappy", "bshapp"}:
+# -------------------------
+# USERNAME (top-of-page identity)
+# -------------------------
+st.markdown("### Sign in")
+
+name = st.text_input(
+    "Username",
+    value=st.session_state.get("username", ""),
+    placeholder="Type a name (e.g., Bshappy)",
+    max_chars=16,
+    key="username_input"
+).strip()
+
+# persist username
+st.session_state["username"] = name
+
+# auto-admin by username
+if name and name.lower() in {"bshappy", "bshapp"}:
     st.session_state["admin_ok"] = True
     st.caption("Status: ✅ Admin")
 else:
     st.session_state["admin_ok"] = False
+    st.caption("Status: Guest")
+
+st.divider()
 
 
 # -------------------------
