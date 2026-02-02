@@ -70,10 +70,10 @@ st.divider()
 
 st.info("⚙️ Stabilizing build: content below temporarily paused.")
 st.stop()
-
 # -------------------------
-# OPTIONAL GEMINI (Estrella)
+# OPTIONAL GEMINI (Estrella) — Flash Demo
 # -------------------------
+MODEL_NAME = "gemini-2.0-flash"
 GEMINI_API_KEY = None
 GENAI_AVAILABLE = False
 
@@ -93,8 +93,19 @@ if GENAI_AVAILABLE:
 else:
     st.sidebar.info("Gemini not installed — Estrella will be offline.")
 
+def gemini_ready() -> bool:
+    return GENAI_AVAILABLE and bool(GEMINI_API_KEY)
+
+def get_gemini_model():
+    if not gemini_ready():
+        return None
+    try:
+        return genai.GenerativeModel(MODEL_NAME)
+    except Exception:
+        return None
+
 # -------------------------
-# HELPERS (defined BEFORE UI)
+# ADMIN SECRET
 # -------------------------
 def get_admin_secret() -> str | None:
     try:
@@ -104,36 +115,6 @@ def get_admin_secret() -> str | None:
     if not pw:
         pw = os.getenv("SLD_ADMIN_PASSWORD")
     return pw
-
-def gemini_ready() -> bool:
-    return GENAI_AVAILABLE and bool(st.secrets.get("GEMINI_API_KEY", None))
-
-def get_gemini_model():
-    if not GENAI_AVAILABLE:
-        return None
-    try:
-        key = st.secrets["GEMINI_API_KEY"]
-        genai.configure(api_key=key)
-        return genai.GenerativeModel(MODEL_NAME)
-    except Exception:
-        return None
-
-def deposit_into_bank(amount: int, note: str) -> None:
-    """
-    Deposit policy:
-      - 95% to user balance
-      - 5% to SLD network fund
-    """
-    amount = int(amount)
-    if amount <= 0:
-        return
-
-    network_cut = amount // 20  # 5%
-    user_amount = amount - network_cut
-
-    b = bank.load_bank(BANK_PATH)
-    
-    # -----------------------------
 # Phrase input (<= 20 chars)
 # -----------------------------
 # -----------------------------
