@@ -27,6 +27,26 @@ if st.button("Redeem", key="redeem_btn"):
         st.error(msg)
 
 st.markdown("---")
+
+st.markdown(
+    """
+    <div style="
+        text-align:center;
+        font-size: 2.4rem;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        color: #ffd27a;
+        text-shadow:
+            0 2px 8px rgba(0,0,0,0.6),
+            0 0 22px rgba(246,193,119,0.55),
+            0 0 48px rgba(246,193,119,0.25);
+        margin-top: 0.4em;
+    ">
+        ✦ STARLIGHT DECK ✦
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 st.markdown("### Admin")
 
 # Admin login (password checked against secrets/env)
