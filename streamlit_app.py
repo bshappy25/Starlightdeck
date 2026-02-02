@@ -5,6 +5,8 @@ from datetime import datetime
 import streamlit as st
 
 import careon_bank_v2 as bank
+import user_profile as profile
+
 import ui_header
 import careon_bubble
 import careon_market
@@ -38,6 +40,7 @@ st.set_page_config(page_title="Starlight Deck", layout="centered")
 # -------------------------
 HERE = os.path.dirname(os.path.abspath(__file__))
 BANK_PATH = os.path.join(HERE, "careon_bank_v2.json")
+PROFILE_PATH = os.path.join(HERE, "user_profile.json")
 LEDGER_PATH = os.path.join(HERE, "codes_ledger.json")
 
 
