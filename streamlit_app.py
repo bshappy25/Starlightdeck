@@ -343,6 +343,39 @@ st.markdown(
 )
 
 # Status box
+
+# ---------- Soft Goal ----------
+b = bank.load_bank(BANK_PATH)
+goal = 1000
+current = int(b.get("sld_network_fund", 0))
+progress_pct = min(100, int((current / goal) * 100))
+
+st.markdown(
+    f"""
+    <div class="cardbox" style="text-align:center;">
+        <b>Community Goal:</b> {current} / {goal} Ȼ<br/>
+        <div class="muted" style="margin-top:0.3em;">
+            When the network reaches {goal} Ȼ, a reward code may be released.
+        </div>
+        <div style="
+            margin-top:0.6em;
+            height:10px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 999px;
+            overflow:hidden;
+        ">
+            <div style="
+                width:{progress_pct}%;
+                height:100%;
+                background: linear-gradient(90deg, #f6c177, #ffd27a);
+                box-shadow: 0 0 12px rgba(246,193,119,0.6);
+            "></div>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
 b = bank.load_bank(BANK_PATH)
 st.markdown(
     f"""
