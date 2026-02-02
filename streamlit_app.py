@@ -1,7 +1,9 @@
 import os
 import streamlit as st
 
-# --- Core modules ---
+# -------------------------
+# CORE MODULES
+# -------------------------
 import careon_bank_v2 as bank
 import ui_header
 import careon_bubble
@@ -27,18 +29,12 @@ BANK_PATH = os.path.join(HERE, "careon_bank_v2.json")
 b = bank.load_bank(BANK_PATH)
 bank.save_bank(b, BANK_PATH)
 
+# -------------------------
+# SESSION STATE DEFAULTS
+# -------------------------
+st.session_state.setdefault("show_market", False)
 
 # -------------------------
-# OPTIONAL GEMINI
-# -------------------------
-try:
-    import google.generativeai as genai
-    GENAI_AVAILABLE = True
-except ImportError:
-    GENAI_AVAILABLE = False
-
-
-# # -------------------------
 # BUILD TICKER PHRASES
 # -------------------------
 b_for_ticker = bank.load_bank(BANK_PATH)
@@ -56,22 +52,16 @@ for tx in reversed(b_for_ticker.get("history", []) or []):
         break
 
 # -------------------------
-# HEADER + CAREON MARKET ENTRY
+# TOP UI (HEADER + CAREON MARKET)
 # -------------------------
 ui_header.render_header(ticker_items=phrases)
 careon_bubble.render_bubble()
 careon_market.render_market(bank, BANK_PATH)
-# -------------------------
-# CONFIG / PATHS
-# -------------------------
-st.set_page_config(page_title="Starlight Deck", layout="centered")
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-BANK_PATH = os.path.join(HERE, "careon_bank_v2.json")
-LEDGER_PATH = os.path.join(HERE, "codes_ledger.json")
-
-GOAL = 1000
-MODEL_NAME = "gemini-3-flash-preview"  # change here only if needed
+# -------------------------
+# DIVIDER — EVERYTHING BELOW IS CONTENT
+# -------------------------
+st.divider()
 
 # -------------------------
 # HELPERS (defined BEFORE UI)
