@@ -64,6 +64,28 @@ careon_market.render_market(bank, BANK_PATH)
 st.divider()
 
 # -------------------------
+# OPTIONAL GEMINI (Estrella)
+# -------------------------
+GEMINI_API_KEY = None
+GENAI_AVAILABLE = False
+
+try:
+    import google.generativeai as genai
+    GENAI_AVAILABLE = True
+except Exception:
+    GENAI_AVAILABLE = False
+
+if GENAI_AVAILABLE:
+    try:
+        GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
+        genai.configure(api_key=GEMINI_API_KEY)
+    except Exception as e:
+        GEMINI_API_KEY = None
+        st.sidebar.warning(f"Gemini key issue: {e}")
+else:
+    st.sidebar.info("Gemini not installed — Estrella will be offline.")
+
+# -------------------------
 # HELPERS (defined BEFORE UI)
 # -------------------------
 def get_admin_secret() -> str | None:
