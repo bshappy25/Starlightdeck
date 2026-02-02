@@ -51,11 +51,8 @@ def rapid_zenith_roll(trials: int = 20, chance: float = 0.05) -> bool:
     """True if at least one Zenith hit occurs across N trials."""
     return any(random.random() < chance for _ in range(trials))
 
-def ensure_state():
-    st.session_state.setdefault("mode", None)
-    st.session_state.setdefault("balance", 25)          # local demo tokens
-    st.session_state.setdefault("network_fund", 0)      # local demo fund
-    st.session_state.setdefault("last_result", None)
+st.session_state.setdefault("mode", None)
+st.session_state.setdefault("last_result", None)
 
 def spend(cost: int):
     st.session_state["balance"] -= cost
@@ -65,7 +62,7 @@ def earn(amount: int):
     st.session_state["balance"] += amount
 
 ensure_state()
-
+b = bank.load_bank(BANK_PATH)
 # ---------- UI ----------
 st.title("✦ Starlight Deck ✦")
 
