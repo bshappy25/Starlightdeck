@@ -31,6 +31,28 @@ except ImportError:
     GENAI_AVAILABLE = False
 
 # -------------------------
+# BUILD TICKER PHRASES (before header)
+# -------------------------
+b_for_ticker = bank.load_bank(BANK_PATH)
+phrases = []
+for tx in reversed(b_for_ticker.get("history", []) or []):
+    if isinstance(tx, dict) and tx.get("type") == "phrase":
+        meta = tx.get("meta") or {}
+        msg = (meta.get("msg") or "").strip()
+        usr = (meta.get("user") or "").strip()
+        if msg:
+            label = f"{usr.upper()}: {msg}" if usr else msg
+            phrases.append(label)
+    if len(phrases) >= 10:
+        break
+
+# -------------------------
+# HEADER + STORE
+# -------------------------
+ui_header.render_header(ticker_items=phrases)
+careon_store.render_store(bank, BANK_PATH)
+
+# -------------------------
 # CONFIG / PATHS
 # -------------------------
 st.set_page_config(page_title="Starlight Deck", layout="centered")
