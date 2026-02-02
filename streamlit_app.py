@@ -68,8 +68,8 @@ st.divider()
 
 # PASTE COMMUNITY BLOCK HERE
 
-st.info("⚙️ Stabilizing build: content below temporarily paused.")
-st.stop()
+#st.info("⚙️ Stabilizing build: content below temporarily paused.")
+#st.stop()
 
 # -------------------------
 # OPTIONAL GEMINI (Estrella) — Flash Demo
