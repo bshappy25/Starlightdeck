@@ -22,9 +22,11 @@ if os.path.exists(AUDIO_PATH):
     with open(AUDIO_PATH, "rb") as f:
         st.audio(f.read(), format="audio/mp3", loop=True)
 else:
-    st.caption("🎧 Ambient audio not found.")
+    st.caption("🎧 Ambient audio not found at assets/ambient.mp3")
+st.write("AUDIO_PATH:", AUDIO_PATH)
+st.write("exists:", os.path.exists(AUDIO_PATH))
 
-st.audio("assets/ambient.mp3", loop=True)
+
 # -------------------------
 # PAGE CONFIG (must be first Streamlit call)
 # -------------------------
