@@ -699,7 +699,7 @@ with c1:
         st.rerun()
 
 with c2:
-        if st.button("Start Rapid"):
+       if st.button("Start Rapid"):
         st.session_state["mode"] = "rapid"
         st.session_state["mode_msg"] = "Rapid mode selected."
         # wipe rapid-only state (fresh start each switch)
